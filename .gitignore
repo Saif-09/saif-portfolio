@@ -1,0 +1,26 @@
+# build output
+dist/
+.vercel/
+.astro/
+
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.*
+
+# misc
+.DS_Store
+npm-debug.log*
+.claude/
+
+# planning / AI-build scaffolding — kept local, not part of the public site
+FABLE-*.md
+PORTFOLIO-SPEC.md
+LAUNCH-CHECKLIST.md
+BROWSER-AUDIT-PROMPT.md
+ABOUT-MOHD-SAIF.md
+direction-v2-bold.html
+color-directions.html
+_shot.mjs

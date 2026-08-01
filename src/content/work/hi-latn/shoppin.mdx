@@ -1,0 +1,62 @@
+---
+translationStatus: reviewed
+title: "Shoppin': AI shopping, end to end"
+description: "Product engineering across iOS, Android, web, aur do backends at Shoppin': AI-powered shopping jahan har product made-to-order hai."
+project: shoppin
+role: contributed
+stack:
+  - React Native
+  - Next.js
+  - Node.js
+  - Python
+  - Postgres
+  - AI / LLM pipelines
+order: 1
+---
+
+## Problem
+
+Online shopping ek search problem hai jo browsing problem ka bharam deti hai. Logon ko pata hota hai roughly kya chahiye, "linen shirt, not boxy, under 2k", lekin stores unse us intent ko filters, categories, aur luck mein translate karwate hain. Shoppin' us gap ko close karne ke liye exist karta hai: logon ko us tarah shop karne do jaise wo sochte hain, AI translation karta hai.
+
+Main ispe product team ke hisse ke kaam karta hoon. Mera kaam hai product engineering across the surfaces jahan ye rehta hai: iOS aur Android apps, web experience, aur unke peeche Node aur Python backends, jabki product khud abhi apna shape dhundh raha hai.
+
+## The role
+
+Main yahan product engineer ke taur pe kaam karta hoon, aur code us kaam ka chhota half hai. Kuch bhi build karne se pehle mujhe pata hona chahiye ki feature user ko kya feel karwata hai aur actually product ko aage badhata hai ya nahi. Matlab product aur design calls ke paas rehna, sirf tickets ke nahi: PostHog mein behavior padhna, WebEngage se lifecycle aur re-engagement flows chalana, aur Google Search Console dekhna taaki web surface discoverable rahe. Ek feature jo clean ship hua lekin koi adopt nahi karta, wo failure hai jo main measure kar sakta hoon, isliye adoption aur retention mere definition of done ka hissa hain, kisi aur ka problem nahi.
+
+## What I work on
+
+**Ek generated catalog with infinite shelf.** Pichle teen mahine se team Shoppin' ka e-commerce side build kar rahi hai, aur ye usual model todta hai: jo kapde log khareedte hain wo kabhi warehouse mein the hi nahi. App aur site pe dikhne wale pieces AI generated ya sourced hain, phir list kiye gaye, toh shelf effectively unlimited hai aur har dress ek insaan ke liye made-to-order hai. No inventory matlab no stockouts aur no dead stock, lekin iska matlab ye bhi hai ki ordering aur fulfillment ko assume karna padta hai ki kuch exist nahi karta jab tak koi actually maangta nahi. Main us pure path pe kaam karta hoon: web store, app, Node commerce backend, aur generation aur AI ke peeche Python services.
+
+**Chat jo garment edit karta hai.** Ek feature jo main own karta hoon usme user AI se baat karke clothing change kar sakta hai, piece ko tweak karke wo bana sakta hai jo wo actually chahte the. Pehla version kaam karta tha lekin slow aur inconsistent tha, toh maine pipeline aur prompting optimize kiya jab tak responses fast aur reliably on-target aane lage. Ye product ka wo hissa hai jo magic feel karta hai, toh usse effortless feel hona chahiye.
+
+**Payments, jahan log pay karte hain.** Maine payment layer end-to-end banaya: India ke liye Razorpay, international ke liye Stripe, aur app ke andar native Apple Pay aur Google Pay taaki checkout us payment method ka use kare jo log apne device pe already trust karte hain. Chahne aur apna banane ke beech kam taps.
+
+**Subscriptions jo dono platforms pe kaam kare.** Maine subscription system ko Qonversion ke saath integrate kiya, taaki recurring plans iOS aur Android pe consistently behave karein bina har platform ke liye receipt validation aur entitlement logic haath se likhe. Purchase state aur access ek jagah rehte hain, jo exactly wahi jagah hai jahan subscription bugs chhupte hain.
+
+**WhatsApp pe order updates.** Jab koi order karta hai, toh unhe pata karne ke liye app wapas nahi aana chahiye. Maine wo flow banaya jo har order update customer ko WhatsApp pe push karta hai, taaki har status change unhe waha pahunche jahan wo already hain.
+
+**Orders chalane ke liye dashboard.** Orders ko manage karne ki jagah chahiye, toh maine internal dashboard banaya jo team use karti hai orders dekhne aur unhe lifecycle ke through move karne ke liye. Customer-facing product utna hi achha hai jitna uske peeche operations hain.
+
+**Do backends, ek product.** Node.js chalta hai commerce aur product APIs; Python chalta hai AI aur generation ka kaam. Unhe alag rakhne se har ek apne terms pe grow kar sakta hai jabki clients thin views rehte hain ek shared contract ke upar. Apps ke liye React Native, web ke liye Next.js.
+
+**Sahi tools se tez.** Main Claude Code pe bharosa karta hoon itni surface area tez se cover karne ke liye bina quality slip kiye, jo mujhe kaam app, web, aur dono backends pe us pace pe le jaane deta hai jo early-stage product maangta hai.
+
+## Decisions
+
+**Ek product brain, kai surfaces.** Jab same chhoti team apps, web, aur backend own karti hai, toh sabse sasta architecture tha shared API layer jo har client ko thin view treat karta hai. Features ek baar land karte hain, har jagah ship hote hain. Trade-off ye hai ki platform-specific polish ko deliberate budget chahiye; humne uska kharcha wahan kiya jahan users actually feel karte hain (gesture responsiveness, image loading) aur skip kiya jahan wo nahi karte.
+
+**AI waha ship karo jahan wo apni keemat wapas kare.** LLM calls baaki stack ke comparison mein slow aur mehngi hain. Humne conversational layer rakha intent capture aur garment editing ke liye, wo hissa jo users ko pasand hai, aur jo precompute ho sakta tha usse background jobs pe daal diya. App AI jaisa feel karta hai; latency budget normal e-commerce app jaisa padhta hai.
+
+**Production mein honestly iterate karo.** Early-stage products six-month roadmaps pe survive nahi karte. Humne chhota ship kiya, real behavior dekha, aur features kill kiye jo usage nahi hilate, unko bhi jo humein pasand the.
+
+## Outcome
+
+{/* TODO(saif): jab shareable numbers mil jayein, yahan metrics list add karo -
+    e.g. store rating / installs / retention, release cadence / crash-free
+    rate, conversion lift / GMV growth. Tab tak copy qualitative hi rahegi
+    purposefully: koi invented numbers nahi. */}
+
+Product [web](https://shoppin.app/home) pe live hai apps stores mein, continuously shipping: features iOS, Android, aur web pe same release cycle mein land karte hain, payments teen rails pe clear hote hain, order updates logon tak WhatsApp pe pahunchte hain, aur AI layer normal e-commerce latency budget ke andar chalta hai. Sabse strong signal hai cadence: ye chhoti team production mein har hafte iterate kar rahi hai, ek launch nahi jo ruk gaya.
+
+Ye case study ongoing hai; ye product ke saath grow karta hai.

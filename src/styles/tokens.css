@@ -1,0 +1,109 @@
+/* ---
+   Design tokens v2 - "Bold monochrome" (paper + ink)
+   Light is the showcase: cream paper, near-black ink.
+   Dark inverts: ink background, cream text. No chroma anywhere -
+   boldness comes from type scale, contrast, and motion.
+   Theme is driven by [data-theme] on <html>, set before first paint.
+   --- */
+
+:root {
+  color-scheme: light;
+
+  --bg: #efeae1;
+  --surface: #ece7de;
+  --ink: #131210;
+  --muted: #6a6459;
+  --line: #d6d0c4;
+  --accent: #131210;
+  --accent-ink: #efeae1;
+
+  /* Type - families. --font-script is overridden per locale in Base.astro
+     so only the active locale's script font is ever referenced/loaded. */
+  --font-script: ui-sans-serif;
+  --font-text: 'Space Grotesk', 'Space Grotesk Fallback', var(--font-script), ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', var(--font-script), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Space Mono Fallback', ui-monospace, monospace;
+
+  /* Type - fluid scale (maximalist) */
+  --text-display: clamp(4rem, 14vw, 13rem);
+  --text-h1: clamp(2.75rem, 8vw, 7.5rem);
+  --text-h2: clamp(2rem, 4.5vw, 3.75rem);
+  --text-body: clamp(1rem, 1.2vw, 1.125rem);
+  --text-small: 0.875rem;
+  --text-mono: 0.8125rem;
+
+  --leading-body: 1.55;
+  --leading-display: 0.9;
+  --measure: 64ch;
+}
+
+/* Non-Latin scripts: Arabic tails, Nastaliq stacking, and Indic conjuncts
+   carry much taller glyph metrics than Archivo Black caps - the maximalist
+   Latin scale explodes vertically. Pull the display sizes in per script. */
+:root:lang(ar),
+:root:lang(ur) {
+  --text-display: clamp(2.75rem, 8vw, 6.5rem);
+  --text-h1: clamp(2rem, 5.5vw, 4.5rem);
+  --text-h2: clamp(1.5rem, 3.5vw, 2.75rem);
+  --leading-display: 1.35;
+}
+
+:root:lang(hi),
+:root:lang(kn),
+:root:lang(te) {
+  --text-display: clamp(3rem, 9vw, 8rem);
+  --text-h1: clamp(2.25rem, 6vw, 5.25rem);
+  --leading-display: 1.25;
+}
+
+:root {
+
+  /* Spacing scale: 4/8/12/16/24/32/48/64/96/128 */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* Layout */
+  --content-max: 90rem; /* 1440px - wider, editorial */
+  --grid-columns: 12;
+  --grid-gutter: clamp(1.25rem, 4vw, 3.75rem);
+
+  /* Shape: sharp surfaces, pill controls */
+  --radius-card: 10px;
+  --radius-pill: 100px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #131210;
+  --surface: #1b1916;
+  --ink: #efeae1;
+  --muted: #928c7f;
+  --line: #2a2723;
+  --accent: #efeae1;
+  --accent-ink: #131210;
+}
+
+/* No-JS fallback: honor the OS preference when the inline
+   theme script never ran (data-theme is absent). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+
+    --bg: #131210;
+    --surface: #1b1916;
+    --ink: #efeae1;
+    --muted: #928c7f;
+    --line: #2a2723;
+    --accent: #efeae1;
+    --accent-ink: #131210;
+  }
+}

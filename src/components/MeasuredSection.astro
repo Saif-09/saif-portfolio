@@ -1,0 +1,59 @@
+---
+import MeasuredTiles from './dashboard/MeasuredTiles';
+import { useTranslations, pathForLocale, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const href = pathForLocale(locale, '/analytics/');
+---
+
+{/* Section 06 - the analytics teaser. */}
+<section id="measured" class="measured">
+  <div class="container">
+    <h2 class="section-heading" data-reveal>{t.measured.heading}</h2>
+    <p class="measured-lead" data-reveal>{t.measured.lead}</p>
+    <MeasuredTiles
+      client:visible
+      t={{
+        visitorsNow: t.measured.visitorsNow,
+        pageviewsToday: t.measured.pageviewsToday,
+        topSection: t.measured.topSection,
+        avgScroll: t.measured.avgScroll,
+        noData: t.measured.noData,
+      }}
+    />
+    <p class="measured-cta-line" data-reveal>
+      <a class="open-cta" href={href}>
+        {t.measured.cta}
+        <span aria-hidden="true">→</span>
+      </a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .measured {
+    padding-block: var(--space-16);
+    border-block-start: 1px solid var(--line);
+  }
+
+  .measured-lead {
+    margin-block-start: var(--space-4);
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 450;
+    text-wrap: balance;
+  }
+
+  .measured-cta-line {
+    margin-block-start: var(--space-8);
+  }
+
+  [dir='rtl'] .open-cta span {
+    transform: scaleX(-1);
+  }
+</style>

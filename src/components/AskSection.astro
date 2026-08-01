@@ -1,0 +1,78 @@
+---
+import AskWidget from './ask/AskWidget';
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+{/* Section 05. Section 06 (analytics teaser) slots in after this one
+    in a later phase, before "Built in the open". */}
+<section id="ask" class="ask">
+  <div class="container ask-inner">
+    <div class="ask-copy">
+      <h2 class="section-heading" data-reveal>{t.ask.heading}</h2>
+      <p class="ask-lead" data-reveal>{t.ask.lead}</p>
+      <p class="ask-disclaimer" data-reveal>{t.ask.disclaimer}</p>
+    </div>
+    {/* The widget itself never animates - it's an input surface. */}
+    <AskWidget
+      client:visible
+      t={{
+        inputLabel: t.ask.inputLabel,
+        placeholder: t.ask.placeholder,
+        send: t.ask.send,
+        thinking: t.ask.thinking,
+        errorText: t.ask.error,
+        errorCta: t.ask.errorCta,
+        email: 'saifmd238@gmail.com',
+        rateLimitedText: t.ask.rateLimited,
+        suggestions: [
+          t.ask.q1,
+          t.ask.q2,
+          t.ask.q3,
+          t.ask.q4,
+        ],
+      }}
+    />
+  </div>
+</section>
+
+<style>
+  .ask {
+    padding-block: var(--space-16);
+    border-block-start: 1px solid var(--line);
+  }
+
+  .ask-inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+    align-items: start;
+  }
+
+  @media (min-width: 48rem) {
+    .ask-inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-16);
+    }
+  }
+
+  .ask-lead {
+    margin-block-start: var(--space-4);
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 450;
+    text-wrap: balance;
+  }
+
+  .ask-disclaimer {
+    margin-block-start: var(--space-8);
+    color: var(--muted);
+    font-size: var(--text-small);
+  }
+</style>

@@ -1,0 +1,108 @@
+---
+translationStatus: reviewed
+title: 'Insomniac: Mac ko lid band rakhte hue jagaye rakho, bina garam kiye'
+description: "Ek macOS menu-bar app jo Mac ko lid band rakhte hue jagaye rakhta hai, ek privileged system command ke ird-gird ek safe wrapper ki tarah bana, ek live thermal cutoff ke saath taaki ye kabhi overheat na ho."
+project: insomniac
+role: built-0-1
+stack:
+  - Swift
+  - SwiftUI
+  - macOS
+  - IOKit
+order: 4.3
+---
+
+## Problem
+
+Main chahta tha ki mera Mac lid band rakhte hue bhi chalta rahe. Dim nahi: asal
+mein kaam karta hua, raatbhar ek AI agent, ek Xcode archive, ek lamba sync, lid
+band, koi external monitor nahi. macOS ise clamshell sleep kehta hai, aur use
+parwah nahi ki aapka kaam beech mein hai.
+
+Pech mechanism mein hai. Popular keep-awake tools IOKit power assertions use karte
+hain, aur wo clamshell sleep ko tab tak nahi rokte jab tak aapke paas ek external
+display, power, aur ek keyboard na juda ho, thik wahi setup jisse main bachna
+chahta tha. Iklauta lever jo bina kuch jode kaam karta hai, wo ek privileged
+command hai: pmset disablesleep. To poora product asal mein ek hi cheez hai, ek
+khatarnak system setting ke ird-gird ek safe wrapper, aur baaki sab kuch us ek
+lever ko safe aur sukhad tarike se kheenchne layak banane ke liye hai.
+
+## Decisions
+
+**Safety feature hai, jage rehna nahi.** Ek generic paid keep-awake app shuru mein
+hi mara hua hai: Amphetamine aur caffeinate pehle se muft mein ye karte hain. Bina
+serve kiya gaya angle tha garmi. Band lid airflow ko ghonta hai, aur koi maujooda
+tool iske baare mein ek shabd nahi kehta. To Insomniac "jage raho" nahi hai, ye
+"machine ko garam kiye bina jage raho" hai.
+
+**macOS jo imaandari se expose karta hai use maapo, nakli degrees nahi.** Lubhawna
+version ek CPU temperature padhta hai aur degrees mein ek countdown dikhata hai.
+Par Apple Silicon die temperature padhne ka koi supported tarika expose nahi
+karta; jo kuch bhi aisa dawa karta hai wo private keys padh raha hai jo models ke
+beech tootti hain. To maine ProcessInfo.thermalState (nominal, fair, serious,
+critical) par banaya, jise koi admin nahi chahiye aur jo hamesha ke liye supported
+hai. Aur asli suraksha ek upfront prediction hai hi nahi: ye ek live thermal
+cutoff hai jo lid band rehte hue state par nazar rakhti hai aur agar ye badhe to
+session auto-stop kar deti hai. Ek prediction galat ho sakta hai; ek live cutoff
+ground truth hai.
+
+**Ek architecture jahan khatarnak hissa swappable hai.** pmset ko root ki tarah
+chalane ke do raste hain: ek AppleScript prompt jo har toggle par password maangta
+hai (maamuli, pehle din kaam karta hai) aur XPC par ek privileged helper jo chupke
+se toggle karta hai (production-grade, signing aur ek pinned contract ki zaroorat).
+App ko kisi ek se jodne ke bajaye, maine dono ko ek PowerControlling protocol ke
+peeche chhipaya. Maine pehle din password-prompt version ship kiya aur baad mein
+silent helper bina kisi caller badlaav ke joda. Helper locked down hai: ek root
+daemon ki tarah ye sirf un XPC connections ko accept karta hai jo is app ke
+identifier aur Team ID se pinned hon.
+
+**Safety invariants code dwara laagu kiye jaate hain.** Ek keep-awake app mein ek
+vinaashkari failure hai: kaam khatam hone ke baad sleep ko disabled chhod dena.
+Maine "sleep ko kabhi disabled na chhodo" ko ek invariant maana aur har exit band
+kiya. Toggle off, auto-off, thermal cutoff, aur battery cutoff sab sleep restore
+karte hain. Quit aur logout termination ko tab tak taalte hain jab tak restore
+poora na ho; app sleep disabled rehte hue marne se inkaar karta hai. Ek hard crash
+intercept nahi kiya ja sakta, to agle launch par app bina kisi active session ke
+sleep disabled paata hai aur ise reset karne ki peshkash karta hai. Koi
+"indefinite" bhi nahi hai: sabse lamba session ek sakht 8-ghante ki seema hai,
+kyunki "forever" thik wahi setting hai jo ek mara hua, garam laptop bag mein
+chhod deti hai.
+
+**Imaandar UI, imaandar privacy.** App sirf menu-bar hai. Advisory ek risk level
+(low, moderate, high) aur ek saada message dikhati hai, kabhi wo degrees nahi jinhe
+main imaandari se nahi padh sakta, aur weather nudge soch-samajhkar sabse kamzor
+input hai: ek garam kamra risk badha sakta hai, par ek thanda kamra ek garam hote
+CPU ko kabhi safe nahi bana sakta. Weather location IP geolocation se aati hai,
+city-level, to koi GPS permission prompt nahi; weather band karo aur app kuch nahi
+bhejta. Koi telemetry nahi, koi analytics nahi.
+
+**Wo bug jo mujhe sirf iske saath jeekar mila.** V1 ne Mac ko jagaye rakha, par
+screen lid band rehte hue jalti rahi, kyunki sleep disable karna macOS ko internal
+display band karne se bhi rokta hai. Keyboard ke khilaf jalta ek backlight barbaad
+battery aur garmi hai, thik wahi cheez jisse app bachata hai. Maine ek lid monitor
+joda jo open-se-closed edge par fire hota hai aur display ko ek harmless user-level
+command se sleep karata hai, privileged helper se soch-samajhkar alag rakha gaya.
+Jis cheez ko iski zaroorat nahi, uske liye least privilege.
+
+**Abhi ship karo, rough edge ko apnao.** Core feature ko App Sandbox off chahiye,
+jo Mac App Store ko bahar kar deta hai, to maine ek direct download ship kiya.
+Pehle Apple ki paperwork par din bitane ke bajaye, maine abhi ek un-notarized build
+ship kiya aur natijatan aane wali Gatekeeper warning ko ek guided, ek-minute ka
+step banaya: installer ek haath se banayi setup guide hai, quarantine-clearing
+command app ke thik bagal mein ek copy karne layak file ki tarah hai, aur app har
+launch par apna quarantine flag hata deta hai taaki warning kabhi wapas na aaye.
+Packaging script ek certificate maujood hote hi ek command se re-sign aur notarize
+kar deti hai.
+
+## Outcome
+
+{/* TODO(saif): downloads / usage once it is public. Qualitative for now. */}
+
+Insomniac [live](https://saif-09.github.io/insomniac/) hai: ek menu-bar app jo Mac
+ko lid-band jagaye rakhta hai, ek live thermal cutoff, ek battery cutoff, crash
+recovery, aur ek signed helper ke zariye silent toggling ke saath. Poori cheez do
+niyamon par tiki hai: imaandar raho (asli mechanism, nakli degrees ke bajaye risk
+levels, ek kamzor signal ko kamzor rakha) aur rough edges ko chhipane ke bajaye
+apnate hue tezi se ship karo. Ek keep-awake app ek chhoti cheez hai, par ye ek aisi
+setting ko chhuta hai jo hardware ko nuksaan pahuncha sakti hai, to har shortcut jo
+demo ko zyada chamkdaar banata, wo product ko kam bharosemand banata.

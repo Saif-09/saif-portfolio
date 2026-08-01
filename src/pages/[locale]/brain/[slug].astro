@@ -1,0 +1,20 @@
+---
+import BrainNotePage from '../../../components/pages/BrainNotePage.astro';
+import { getBrainNotes } from '../../../lib/brain';
+import { DEFAULT_LOCALE, LOCALES, type Locale } from '../../../i18n';
+
+export async function getStaticPaths() {
+  const notes = await getBrainNotes();
+  return LOCALES.filter((l) => l.code !== DEFAULT_LOCALE).flatMap((l) =>
+    notes.map((note) => ({
+      params: { locale: l.code, slug: note.slug },
+      props: { note },
+    })),
+  );
+}
+
+const locale = Astro.params.locale as Locale;
+const { note } = Astro.props;
+---
+
+<BrainNotePage locale={locale} note={note} />

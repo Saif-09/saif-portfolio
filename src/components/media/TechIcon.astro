@@ -1,0 +1,48 @@
+---
+/**
+ * Inline monochrome tech icon (simple-icons path, fill: currentColor).
+ * Decorative - always paired with a visible text label.
+ */
+const icons = import.meta.glob('/src/assets/icons/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+interface Props {
+  name:
+    | 'react'
+    | 'nodedotjs'
+    | 'mongodb'
+    | 'postgresql'
+    | 'typescript'
+    | 'astro'
+    | 'claude'
+    | 'redis'
+    | 'posthog'
+    | 'notion'
+    | 'obsidian'
+    | 'xcode';
+}
+
+const { name } = Astro.props;
+const raw = icons[`/src/assets/icons/${name}.svg`] ?? '';
+const svg = raw.replace('<svg ', '<svg fill="currentColor" aria-hidden="true" ');
+---
+
+<span class="tech-icon" set:html={svg} />
+
+<style>
+  .tech-icon {
+    display: inline-flex;
+    inline-size: 1.05em;
+    block-size: 1.05em;
+    color: var(--muted);
+    vertical-align: -0.15em;
+  }
+
+  .tech-icon :global(svg) {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+</style>

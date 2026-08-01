@@ -1,0 +1,90 @@
+---
+translationStatus: reviewed
+title: 'Wellbeing Nutrition: Shopify par app ka ground-up rebuild'
+description: "Wellbeing Nutrition ke iOS aur Android app ko React Native mein scratch se rebuild karna, ek thin Node data layer ke through Shopify se wire karna, aur purane app ke upar ek seamless update ki tarah ship karna."
+project: wellbeing-nutrition
+role: built-0-1
+stack:
+  - React Native
+  - Node.js
+  - Shopify Storefront API
+  - GraphQL
+  - GoKwik
+  - CleverTap
+order: 2
+---
+
+## Problem
+
+Wellbeing Nutrition ek D2C nutrition brand hai jiski website Shopify par bani hui
+aur polished hai. Jo iske paas nahi tha wo tha ek achha app. Purana app Shopify ke
+App Maker se bana tha, aur experience mein ye saaf dikhta tha: kaam karta tha, par
+kabhi smooth nahi lagta tha. Maine ise Infinite Locus mein pick kiya, aur brief
+bilkul specific tha: React Native mein scratch se ek bilkul naya iOS aur Android
+app banao jo fast aur polished feel ho, aur ye bina kisi naye backend ke karo.
+Orders, catalog, aur dashboard Shopify par hi chalte rahenge, bilkul waise jaise
+web par chalte the.
+
+Interesting constraint yahi last wala hissa tha. Shopify web React app mein
+aasani se wire ho jaata hai; React Native ke liye aisa koi comparable rasta nahi
+hai.
+
+## Decisions
+
+**Seedhe Shopify se baat karo, ek aise client se jo iske liye bana hi nahi tha.**
+Web SDK ko wahan zabardasti lagane ke bajaye jahan uski jagah nahi thi, maine
+Shopify ke GraphQL API ka use kiya taaki store se connect ho sakoon aur app ko
+jo chahiye wo sab pull kar sakoon: products, collections, carts, orders. Isse
+asli Shopify data beech mein kisi extra service ke bina ek React Native app mein
+flow karne laga.
+
+**Data ko wahan reshape karo jahan ye sasta hai, wahan nahi jahan ye bhaari pade.**
+Shopify data ko apne hi shape mein return karta hai, us shape mein nahi jo meri
+screens ko chahiye tha, isliye pehle version ne Shopify se data pull kiya aur har
+response ko device par hi clean kiya. Kaam karta tha, par har query ko phone par
+process karne se app bhaari aur slow ho gaya, jo brief ka bilkul ulta tha. To
+maine wo ek piece add kiya jo brief mein originally nahi tha: ek thin Node service
+jo Shopify aur app ke beech baithti hai. Ye bhaari GraphQL queries chalati hai,
+data ko clean aur reshape karti hai, aur app ko ek simple API ke through bilkul
+wahi deti hai jo use chahiye. Yahi ek move hai jisne app ko smooth banaya. Har
+cheez iske through nahi jaati: light queries aaj bhi app se seedhe Shopify par
+jaati hain, taaki mujhe us hop ki keemat na chukani pade jiski zaroorat nahi hai.
+
+**Missing pieces ko metaobjects se model karo.** Jahan storefront kisi aisi cheez
+ko natively expose nahi karta tha jo app ko chahiye thi, wahan maine use hold
+karne ke liye Shopify metaobjects banaye aur unhe usi pipeline ke through bheja,
+taaki app ko bina koi custom system of record khada kiye ek clean, consistent
+data model mile.
+
+**Ise ek naye app ki tarah nahi, ek update ki tarah ship karo.** WBN team chahti
+thi ki rebuild existing users tak purane App Maker app ke update ki tarah pahunche,
+na ki ek nayi listing ki tarah. Maine ye figure out kiya ki existing app ko kaise
+take over karoon taaki naya build uski jagah ship ho: wahi users, wahi store
+listing, rating untouched. Kisi ko kuch dobara download nahi karna pada, aur bahar
+se ye switch invisible tha.
+
+**Login aur checkout, banaya nahi, liya.** No-backend logic sabse zyada un do flows
+par laagu hua jinhe main khud haath se banana sabse kam chahta tha: login aur
+payments. Maine dono ke liye GoKwik integrate kiya, taaki returning customers ko
+fast phone-number login aur Indian payments ke liye tune kiya gaya checkout mile,
+aur koi auth ya payment infrastructure mujh par na aaye.
+
+**Pehle instrument karo, phir engage karo.** Maine product analytics aur lifecycle
+messaging ke liye CleverTap add kiya, taaki brand dekh sake ki app asal mein kaise
+use ho raha hai aur launch se hi logon tak push aur campaigns ke through pahunch
+sake, na ki andhere mein ship karke mahino baad engagement add kare.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / MAU / share of orders via app,
+    repeat-purchase rate or AOV vs web. Qualitative until real numbers land. */}
+
+Dono apps ship hue aur
+[App Store](https://apps.apple.com/in/app/wellbeing-nutrition/id6654917685) aur
+[Google Play](https://play.google.com/store/apps/details?id=com.coffye.pjfzfc) par
+live hain, purane App Maker app ke upar ek seamless update ki tarah deliver kiye
+gaye taaki existing audience aur rating intact rahe. Result ek fast, native-feeling
+React Native app hai jo poori tarah Shopify par chalta hai, jismein ek chhoti Node
+data layer sirf wahin heavy lifting karti hai jahan ye matter karta hai. Brand ne
+apna commerce stack banaye rakha aur aakhirkar use ek app experience mila jo uski
+website se match karta hai.

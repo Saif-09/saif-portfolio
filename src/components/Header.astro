@@ -1,0 +1,158 @@
+---
+import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+import MobileMenu from './MobileMenu';
+import {
+  LOCALES,
+  getLocale,
+  pathForLocale,
+  stripLocale,
+  useTranslations,
+  type Locale,
+} from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const def = getLocale(locale);
+const t = useTranslations(locale);
+const pathname = Astro.url.pathname;
+const current = stripLocale(pathname);
+
+const navItems = [
+  { label: t.nav.home, base: '/' },
+  { label: t.nav.work, base: '/work/' },
+  { label: t.nav.about, base: '/about/' },
+  { label: t.nav.brain, base: '/brain/' },
+  { label: t.nav.analytics, base: '/analytics/' },
+  { label: t.nav.contact, base: '/contact/' },
+].map((item) => ({
+  label: item.label,
+  href: pathForLocale(locale, item.base),
+  current:
+    item.base === '/'
+      ? current === '/'
+      : current === item.base || current.startsWith(item.base),
+}));
+
+const homeHref = pathForLocale(locale, '/');
+const switcherItems = LOCALES.map((l) => ({
+  code: l.code,
+  lang: l.lang,
+  nativeName: l.nativeName,
+  href: pathForLocale(l.code, pathname),
+  current: l.code === locale,
+}));
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href={homeHref}>{t.site.name}</a>
+
+    <nav class="header-nav" aria-label={t.a11y.mainNav}>
+      <ul role="list">
+        {
+          navItems.map((item) => (
+            <li>
+              <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header-controls">
+      <LanguageSwitcher
+        client:idle
+        label={t.a11y.languageMenu}
+        currentName={def.nativeName}
+        items={switcherItems}
+      />
+      <ThemeToggle client:load label={t.a11y.themeToggle} />
+      <MobileMenu
+        client:idle
+        items={navItems}
+        openLabel={t.nav.menu}
+        closeLabel={t.nav.close}
+      />
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 90;
+    border-block-end: 1px solid var(--line);
+    /* Solid, not blurred: backdrop-filter forces a full repaint of the
+       blur region on every scrolled frame - the classic scroll-jank tax
+       on retina GPUs. Bold monochrome reads better opaque anyway. */
+    background-color: var(--bg);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-block: var(--space-3);
+  }
+
+  .site-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.125rem;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    text-decoration: none;
+    margin-inline-end: auto;
+  }
+
+  .header-nav ul {
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  .header-nav a {
+    display: inline-block;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-radius: 999px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: var(--text-small);
+  }
+
+  .header-nav a:hover {
+    color: var(--ink);
+    background-color: var(--surface);
+  }
+
+  .header-nav a[aria-current='page'] {
+    color: var(--ink);
+    background-color: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 63.9rem) {
+    .header-nav {
+      display: none;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .header-controls :global(.mobile-menu) {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+import Base from '../../layouts/Base.astro';
+import ContactForm from '../ContactForm';
+import { useTranslations, type Locale } from '../../i18n';
+import { profile } from '../../data/profile';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const direct = [
+  { label: t.footer.email, href: `mailto:${profile.email}` },
+  { label: t.footer.github, href: profile.github },
+  { label: t.footer.linkedin, href: profile.linkedin },
+  { label: t.footer.resume, href: profile.resume },
+];
+---
+
+<Base
+  locale={locale}
+  title={`${t.nav.contact} · ${t.site.name}`}
+  description={t.contact.lead}
+>
+  <div class="contact-page container">
+    <header class="contact-header">
+      <h1 class="sec-label">
+        <span class="sec-n" aria-hidden="true">(06)</span><br />
+        {t.contact.heading}
+      </h1>
+    </header>
+    <div class="contact-inner">
+      <div class="contact-lead-block">
+        <p class="contact-lead">{t.contact.lead}</p>
+        <p class="contact-direct-lead">{t.contact.directLead}</p>
+        <ul class="contact-direct" role="list">
+          {
+            direct.map((link) => (
+              <li>
+                <a class="chip" href={link.href} rel="noopener">
+                  {link.label}
+                  <span aria-hidden="true" class="chip-arrow">↗</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      {/* The form never animates - it's an input surface. */}
+      <ContactForm client:visible t={t.contact} />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .contact-page {
+    padding-block: var(--space-12) var(--space-16);
+  }
+
+  .contact-header {
+    margin-block-end: var(--space-12);
+  }
+
+  .contact-inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  @media (min-width: 48rem) {
+    .contact-inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-16);
+    }
+  }
+
+  .contact-lead {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 450;
+    text-wrap: balance;
+  }
+
+  .contact-direct-lead {
+    margin-block-start: var(--space-8);
+    color: var(--muted);
+    font-size: var(--text-small);
+  }
+
+  .contact-direct {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-block-start: var(--space-3);
+  }
+</style>

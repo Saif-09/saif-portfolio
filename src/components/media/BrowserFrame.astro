@@ -1,0 +1,82 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  /** Domain shown in the fake address bar. */
+  domain?: string;
+  loading?: 'lazy' | 'eager';
+  /** Small variant for responsive loading (mobile picks this). */
+  thumb?: string;
+  /** Set when this image is the page's LCP element. */
+  priority?: boolean;
+}
+
+const { src, alt, domain, loading = 'lazy', thumb, priority = false } = Astro.props;
+const srcset = thumb ? `${thumb} 480w, ${src} 1280w` : undefined;
+const sizes = thumb ? '(min-width: 64rem) 38vw, 92vw' : undefined;
+---
+
+<figure class="browser-frame">
+  <div class="browser-chrome" aria-hidden="true">
+    <span class="browser-dot"></span>
+    <span class="browser-dot"></span>
+    <span class="browser-dot"></span>
+    {domain && <span class="browser-domain" dir="ltr">{domain}</span>}
+  </div>
+  <img
+    src={src}
+    srcset={srcset}
+    sizes={sizes}
+    alt={alt}
+    loading={priority ? 'eager' : loading}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding="async"
+    width="1280"
+    height="800"
+  />
+</figure>
+
+<style>
+  .browser-frame {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--surface);
+    box-shadow: 0 12px 40px rgb(0 0 0 / 0.12);
+  }
+
+  .browser-chrome {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-end: 1px solid var(--line);
+  }
+
+  .browser-dot {
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 50%;
+    background-color: var(--line);
+  }
+
+  .browser-domain {
+    margin-inline: auto;
+    padding-inline: var(--space-3);
+    color: var(--muted);
+    font-size: 0.7rem;
+    background-color: var(--bg);
+    border-radius: 999px;
+    padding-block: 2px;
+  }
+
+  img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    /* Hard-reserve the box - no reflow when the file arrives. */
+    aspect-ratio: 1280 / 800;
+    object-fit: cover;
+  }
+</style>

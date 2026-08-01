@@ -1,0 +1,60 @@
+---
+title: 'Ueue: a solo-built product ecosystem'
+description: 'iOS and Android apps, a browser extension, and a website designed, built, and shipped by one person.'
+project: ueue
+role: built-0-1
+stack:
+  - React Native
+  - React
+  - Node.js
+  - Browser extension APIs
+order: 3
+---
+
+## Problem
+
+Most side projects die as repos. Ueue was a deliberate exercise in the
+opposite: take one idea and ship it as a *complete product ecosystem*: apps on
+[iOS](https://apps.apple.com/in/app/save-watch-later-ueue/id6783338928) and
+[Android](https://play.google.com/store/apps/details?id=com.ueue), a
+[browser extension](https://chromewebstore.google.com/detail/jpblogopoikmddifigglmhbmmdlcdkpf),
+and a [website](https://ueue.ziyarex.com/), with one person doing product,
+design, engineering, and release.
+
+Ueue itself is a save-for-later app: the calm queue for everything you mean to get
+to. It captures from any app, sorts your saves into lists, resurfaces them on
+gentle schedules, and can even pick what fits the time you actually have, so the
+things you save get finished instead of buried in a bookmark graveyard. Mobile and
+web stay in sync, a browser extension saves the current tab in one click, and a
+focus mode with no feed keeps it about finishing, not scrolling.
+
+The constraint *was* the brief: what does it take to run every role at once
+and still ship something people can install today?
+
+## Decisions
+
+**Three surfaces, one spine.** The app, extension, and site share the same
+backend and the same product vocabulary. Each surface does what it's
+uniquely good at instead of cloning the others, the extension lives where
+the user's attention already is, the app owns the dedicated session, the
+site explains and onboards.
+
+**Scope like a solo dev, polish like a team.** Feature list ruthlessly
+short; states (empty, loading, error, offline) treated as first-class
+features. A small product that behaves impeccably beats a large one that
+mostly works.
+
+**Ship real, learn real.** Play Store review, Chrome Web Store review, a
+live domain, the unglamorous production details are the point. Side
+projects that skip them prove nothing.
+
+## Outcome
+
+{/* TODO(saif): usage metrics slot, installs / weekly actives, and the
+    one public lesson, when you want to state them. */}
+
+All the surfaces are live and reviewed: the apps on the App Store and Google
+Play, the extension in the Chrome Web Store, and the site in production. One person
+carried a single idea through three different review processes and three
+different runtimes, and the ecosystem still behaves like one product,
+because every surface shares the same spine.

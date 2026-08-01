@@ -1,0 +1,58 @@
+---
+import { useTranslations, pathForLocale, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const href = pathForLocale(locale, '/about/');
+---
+
+{/* Section 02 - about teaser: one big statement, then the full story. */}
+<section id="about-teaser" class="about-teaser">
+  <div class="container about-teaser-inner">
+    <p class="eyebrow" data-reveal>
+      <span class="sec-n" aria-hidden="true">(02)</span>
+      {t.about.heading}
+    </p>
+    <h2 class="about-teaser-statement" data-split>{t.aboutTeaser.statement}</h2>
+    <p class="about-teaser-sub" data-reveal>{t.aboutTeaser.sub}</p>
+    <p data-reveal>
+      <a class="open-cta" href={href}>
+        {t.aboutTeaser.cta}
+        <span aria-hidden="true">→</span>
+      </a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .about-teaser {
+    border-block-start: 1px solid var(--line);
+  }
+
+  .about-teaser-inner {
+    padding-block: var(--space-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    align-items: flex-start;
+  }
+
+  .about-teaser-statement {
+    font-size: var(--text-h2);
+    max-inline-size: 22ch;
+  }
+
+  .about-teaser-sub {
+    color: var(--muted);
+    max-inline-size: 52ch;
+  }
+
+  [dir='rtl'] .open-cta span {
+    transform: scaleX(-1);
+    display: inline-block;
+  }
+</style>

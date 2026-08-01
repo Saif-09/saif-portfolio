@@ -1,0 +1,99 @@
+---
+title: 'Insomniac: keep the Mac awake, lid closed, without cooking it'
+description: "A macOS menu-bar app that keeps a Mac awake with the lid shut, built as a safe wrapper around a privileged system command, with a live thermal cutoff so it never overheats."
+project: insomniac
+role: built-0-1
+stack:
+  - Swift
+  - SwiftUI
+  - macOS
+  - IOKit
+order: 4.3
+---
+
+## Problem
+
+I wanted my Mac to keep running with the lid shut. Not dimmed: actually working,
+an AI agent overnight, an Xcode archive, a long sync, lid closed, no external
+monitor. macOS calls that clamshell sleep, and it does not care that your task is
+mid-flight.
+
+The catch is in the mechanism. The popular keep-awake tools use IOKit power
+assertions, and those do not prevent clamshell sleep unless you have an external
+display, power, and a keyboard attached, exactly the setup I was trying to avoid.
+The only lever that works with nothing attached is a privileged command: pmset
+disablesleep. So the whole product is really one thing, a safe wrapper around a
+dangerous system setting, and everything else exists to make that one lever safe
+and pleasant to pull.
+
+## Decisions
+
+**Safety is the feature, not staying awake.** A generic paid keep-awake app is dead
+on arrival: Amphetamine and caffeinate already do it for free. The unserved angle
+was heat. A closed lid chokes airflow, and no existing tool says a word about it.
+So Insomniac is not "stay awake", it is "stay awake without cooking the machine".
+
+**Measure what macOS exposes honestly, not fake degrees.** The tempting version
+reads a CPU temperature and shows a countdown in degrees. But Apple Silicon exposes
+no supported way to read die temperature; anything claiming to is reading private
+keys that break across models. So I built on ProcessInfo.thermalState (nominal,
+fair, serious, critical), which needs no admin and is supported forever. And the
+real protection is not an up-front prediction at all: it is a live thermal cutoff
+that watches the state while the lid is closed and auto-stops the session if it
+escalates. A prediction can be wrong; a live cutoff is ground truth.
+
+**An architecture where the dangerous part is swappable.** Running pmset as root
+has two paths: an AppleScript prompt that asks for a password on every toggle
+(trivial, works day one) and a privileged helper over XPC that toggles silently
+(production-grade, needs signing and a pinned contract). Instead of coupling the
+app to either, I hid both behind one PowerControlling protocol. I shipped the
+password-prompt version on day one and added the silent helper later with zero
+caller changes. The helper is locked down: as a root daemon it only accepts XPC
+connections pinned to this app's identifier and Team ID.
+
+**The safety invariants are enforced by the code.** A keep-awake app has one
+catastrophic failure: leaving sleep disabled after you are done. I treated "never
+leave sleep disabled" as an invariant and closed every exit. Toggle off, auto-off,
+thermal cutoff, and battery cutoff all restore sleep. Quit and logout defer
+termination until the restore completes; the app refuses to die with sleep still
+disabled. A hard crash cannot be intercepted, so on next launch the app detects
+sleep disabled with no active session and offers to reset it. There is also no
+"indefinite": the longest session is a hard 8-hour cap, because "forever" is
+exactly the setting that leaves a dead, hot laptop in a bag.
+
+**Honest UI, honest privacy.** The app is menu-bar only. The advisory shows a risk
+level (low, moderate, high) and a plain message, never degrees I cannot read
+honestly, and the weather nudge is deliberately the weakest input: a hot room can
+raise risk, but a cold room can never make a cooking CPU safe. The weather location
+comes from IP geolocation, city-level, so there is no GPS permission prompt; turn
+weather off and the app sends nothing. No telemetry, no analytics.
+
+**The bug I only found by living with it.** V1 kept the Mac awake, but the screen
+stayed lit with the lid closed, because disabling sleep also stops macOS from
+turning the internal display off. A backlight burning against the keyboard is
+wasted battery and heat, the exact thing the app protects against. I added a lid
+monitor that fires on the open-to-closed edge and puts the display to sleep with a
+harmless user-level command, kept deliberately separate from the privileged helper.
+Least privilege for the thing that does not need it.
+
+**Ship now, own the rough edge.** The core feature needs the App Sandbox off, which
+rules out the Mac App Store, so I shipped a direct download. Rather than spend days
+on Apple's paperwork first, I shipped an un-notarized build now and made the
+resulting Gatekeeper warning a guided, one-minute step: the installer is a
+hand-drawn setup guide, the quarantine-clearing command sits right next to the app
+as a copyable file, and the app strips its own quarantine flag on every launch so
+the warning never comes back. The packaging script re-signs and notarizes with one
+command the moment a certificate exists.
+
+## Outcome
+
+{/* TODO(saif): downloads / usage once it is public. Qualitative for now. */}
+
+Insomniac is [live](https://saif-09.github.io/insomniac/): a menu-bar app that
+keeps a Mac awake lid-closed, with a live thermal cutoff, a battery cutoff, crash
+recovery, and silent toggling through a signed helper. The whole thing rests on two
+rules: be honest (the real mechanism, risk levels instead of fake degrees, a weak
+signal kept weak) and ship fast with the rough edges owned rather than hidden. A
+keep-awake app is a small thing, but it touches a setting that can damage hardware,
+so every shortcut that would have made the demo flashier would have made the
+product less trustworthy.

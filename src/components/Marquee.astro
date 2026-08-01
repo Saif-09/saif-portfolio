@@ -1,0 +1,18 @@
+---
+/** Tilted ink ticker. Decorative - the same content exists in text
+    elsewhere (about/stack), so it's aria-hidden. Pauses under
+    reduced motion (static first segment stays visible). */
+interface Props {
+  items: string[];
+}
+
+const { items } = Astro.props;
+const segment = items.join(' ✦ ') + ' ✦';
+---
+
+<div class="marq" aria-hidden="true">
+  <div class="marq-track">
+    <span>{segment}</span>
+    <span>{segment}</span>
+  </div>
+</div>

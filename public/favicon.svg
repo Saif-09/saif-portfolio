@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    rect { fill: #201e1b; }
+    text { fill: #edeae4; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #eae6de; }
+      text { fill: #14130f; }
+    }
+  </style>
+  <rect width="64" height="64" rx="14" />
+  <text x="32" y="44" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="34" font-weight="600">MS</text>
+</svg>

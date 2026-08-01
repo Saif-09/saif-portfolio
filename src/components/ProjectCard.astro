@@ -1,0 +1,152 @@
+---
+import ProjectThumb from './media/ProjectThumb.astro';
+import { useTranslations, pathForLocale, type Locale } from '../i18n';
+import type { Project } from '../data/projects';
+
+interface Props {
+  locale: Locale;
+  project: Project;
+}
+
+const { locale, project } = Astro.props;
+const t = useTranslations(locale);
+
+const roleLabel = project.role === 'built-0-1' ? t.work.built01 : t.work.contributed;
+const caseHref = project.featured ? pathForLocale(locale, `/work/${project.id}/`) : null;
+---
+
+<article class="card" data-magnetic-card>
+  {
+    caseHref ? (
+      <a class="card-thumb-link" href={caseHref} tabindex="-1" aria-hidden="true">
+        <ProjectThumb project={project} />
+      </a>
+    ) : (
+      <ProjectThumb project={project} />
+    )
+  }
+  <div class="card-head">
+    <h3 class="card-name">{project.name}</h3>
+    <span class="card-role">{roleLabel}</span>
+  </div>
+  <p class="card-scope">{project.scope}</p>
+  <p class="card-summary">{project.summary}</p>
+  <div class="card-foot">
+    {
+      caseHref ? (
+        <a class="card-cta" href={caseHref}>
+          {t.work.caseStudy}
+          <span aria-hidden="true">→</span>
+        </a>
+      ) : (
+        <span class="card-cta-spacer" />
+      )
+    }
+    <ul class="card-links" role="list">
+      {
+        project.links.map((link) => (
+          <li>
+            <a class="chip" href={link.href} rel="noopener">
+              {link.label}
+              <span aria-hidden="true" class="chip-arrow">↗</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    block-size: 100%;
+  }
+
+  .card-thumb-link {
+    display: block;
+    border-radius: 10px;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding-inline: var(--space-2);
+    margin-block-start: var(--space-1);
+  }
+
+  .card-name {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 550;
+    line-height: 1.2;
+  }
+
+  .card-role {
+    color: var(--muted);
+    font-size: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding-block: 2px;
+    padding-inline: var(--space-2);
+    white-space: nowrap;
+  }
+
+  .card-scope {
+    color: var(--muted);
+    font-size: var(--text-small);
+    padding-inline: var(--space-2);
+  }
+
+  .card-summary {
+    padding-inline: var(--space-2);
+    font-size: var(--text-small);
+    max-inline-size: var(--measure);
+  }
+
+  .card-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-block-start: auto;
+    padding-inline: var(--space-2);
+    padding-block-end: var(--space-1);
+  }
+
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--ink);
+    font-weight: 500;
+    font-size: var(--text-small);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-color: var(--muted);
+  }
+
+  .card-cta:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  [dir='rtl'] .card-cta span {
+    transform: scaleX(-1);
+  }
+
+  .card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+</style>

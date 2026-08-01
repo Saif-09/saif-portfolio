@@ -1,0 +1,141 @@
+---
+import Base from '../../layouts/Base.astro';
+import Hero from '../Hero.astro';
+import Marquee from '../Marquee.astro';
+import WorkRows from '../WorkRows.astro';
+import AboutTeaser from '../AboutTeaser.astro';
+import AskSection from '../AskSection.astro';
+import BuiltInOpen from '../BuiltInOpen.astro';
+import { useTranslations, pathForLocale, type Locale } from '../../i18n';
+import { homeProjects } from '../../data/projects';
+import { profile } from '../../data/profile';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const workHref = pathForLocale(locale, '/work/');
+const contactHref = pathForLocale(locale, '/contact/');
+
+const MARQUEE = [
+  'React Native',
+  'Next.js',
+  'Node',
+  'Firebase',
+  'Postgres',
+  'AI',
+  '0→1 Products',
+  'iOS',
+  'Android',
+  'Web',
+];
+---
+
+<Base locale={locale}>
+  <Hero locale={locale} />
+  {/* Scroll landmark for the sticky-hero curtain: drives the CSS fade
+      timeline and tells the WebGL field when the hero is fully covered. */}
+  <div class="hero-end-sentinel" aria-hidden="true"></div>
+  <Marquee items={MARQUEE} />
+
+  {/* Selected work - big interactive rows; full grid at /work. */}
+  <section id="work" class="home-work">
+    <div class="container home-work-head">
+      <h2 class="sec-label" data-split>
+        <span class="sec-n" aria-hidden="true">(01 → {String(homeProjects.length).padStart(2, '0')})</span><br />
+        {t.work.heading}
+      </h2>
+      <a class="open-cta" href={workHref} data-reveal>
+        {t.work.allWork}
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+    <WorkRows locale={locale} projects={homeProjects} />
+  </section>
+
+  <AboutTeaser locale={locale} />
+  <AskSection locale={locale} />
+  <BuiltInOpen locale={locale} />
+
+  {/* Huge-type contact band - the full form lives at /contact. */}
+  <section class="note-band">
+    <div class="container note-inner">
+      <h2 class="note-title" data-split>{t.contactBand.title}</h2>
+      <div class="note-row">
+        <p class="note-avail" data-reveal>{t.contactBand.availability}</p>
+        <a class="form-submit note-cta" href={contactHref} data-reveal>
+          <span data-magnetic class="note-cta-magnet">
+            {profile.email}
+            <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .home-work {
+    padding-block: var(--space-16) var(--space-12);
+  }
+
+  .home-work-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    margin-block-end: var(--space-8);
+  }
+
+  .note-inner {
+    padding-block: clamp(4rem, 9vw, 8rem);
+  }
+
+  .note-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    margin-block-start: var(--space-8);
+  }
+
+  .note-avail {
+    font-family: var(--font-mono);
+    font-size: var(--text-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.65;
+  }
+
+  .note-avail:lang(ar),
+  .note-avail:lang(ur) {
+    letter-spacing: 0;
+  }
+
+  /* Inverted pill inside the ink band */
+  .note-cta {
+    background-color: var(--accent-ink);
+    color: var(--accent);
+    border-color: var(--accent-ink);
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-mono);
+  }
+
+  .note-cta-magnet {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  [dir='rtl'] .note-cta-magnet span,
+  [dir='rtl'] .open-cta span {
+    transform: scaleX(-1);
+    display: inline-block;
+  }
+</style>

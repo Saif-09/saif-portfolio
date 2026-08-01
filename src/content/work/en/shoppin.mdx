@@ -1,0 +1,119 @@
+---
+title: "Shoppin': AI shopping, end to end"
+description: "Product engineering across iOS, Android, web, and two backends at Shoppin': AI-powered shopping where every product is made to order."
+project: shoppin
+role: contributed
+stack:
+  - React Native
+  - Next.js
+  - Node.js
+  - Python
+  - Postgres
+  - AI / LLM pipelines
+order: 1
+---
+
+## Problem
+
+Shopping online is a search problem pretending to be a browsing problem. People
+know roughly what they want, "linen shirt, not boxy, under 2k", but stores make
+them translate that intent into filters, categories, and luck. Shoppin' exists to
+close that gap: let people shop the way they think, with AI doing the translation.
+
+I work on this as part of the product team. My job is
+product engineering across the surfaces it lives on: the iOS and Android apps, the
+web experience, and the Node and Python backends behind them, while the product
+itself is still finding its shape.
+
+## The role
+
+I work here as a product engineer, and the code is the smaller half of that job.
+Before I build anything I want to know how the feature changes what a user feels
+and whether it actually moves the product forward. That means living close to the
+product and design calls, not just the tickets: reading behavior in PostHog,
+running lifecycle and re-engagement flows through WebEngage, and watching Google
+Search Console to keep the web surface discoverable. A feature that ships clean
+but nobody adopts is a failure I can measure, so I treat adoption and retention as
+part of my definition of done, not someone else's problem.
+
+## What I work on
+
+**A generated catalog with an infinite shelf.** For the last three months the
+team has been building the e-commerce side of Shoppin', and it breaks the usual
+model: the clothes people buy were never in a warehouse. The pieces shown on the
+app and site are AI generated or sourced, then listed, so the shelf is effectively
+unlimited and every dress is made to order for one person. No inventory means no
+stockouts and no dead stock, but it also means ordering and fulfillment have to
+assume nothing exists until someone actually asks for it. I work across that whole
+path: the web store, the app, the Node commerce backend, and the Python services
+behind the generation and AI work.
+
+**Chat that edits the garment.** One of the features I own lets a user talk to the
+AI and change the clothing itself, tweaking a piece until it is the thing they
+wanted. The first version worked but was slow and inconsistent, so I optimized the
+pipeline and the prompting until responses came back fast and reliably on target.
+It is the part of the product that feels like magic, so it has to feel effortless.
+
+**Payments, everywhere people pay.** I built the payment layer end to end:
+Razorpay for India, Stripe for international, and native Apple Pay and Google Pay
+inside the app so checkout uses the payment method people already trust on their
+device. Fewer taps between wanting the thing and owning it.
+
+**Subscriptions that work on both platforms.** I integrated the subscription
+system with Qonversion, so recurring plans behave consistently across iOS and
+Android without hand-rolling receipt validation and entitlement logic per platform.
+Purchase state and access live in one place, which is exactly where subscription
+bugs tend to hide.
+
+**Order updates on WhatsApp.** When someone orders, they should not have to come
+back to the app to find out what is happening. I built the flow that pushes each
+order update to the customer over WhatsApp, so every status change reaches them
+where they already are.
+
+**A dashboard to run the orders.** Orders need a place to be managed, so I built
+the internal dashboard that the team uses to see and move orders through their
+lifecycle. The customer-facing product is only as good as the operations behind
+it.
+
+**Two backends, one product.** Node.js runs the commerce and product APIs; Python
+runs the AI and generation work. Keeping them separate lets each grow on its own
+terms while the clients stay thin views over a shared contract. React Native for
+the apps, Next.js for the web.
+
+**Faster with the right tools.** I lean on Claude Code to move quickly across this
+much surface area without letting quality slip, which is what lets me carry work
+across app, web, and both backends at the pace an early-stage product demands.
+
+## Decisions
+
+**One product brain, many surfaces.** With the same small team owning apps, web,
+and backend, the cheapest architecture was a shared API layer that treats every
+client as a thin view. Features land once, ship everywhere. The trade-off is that
+platform-specific polish needs deliberate budget; we spent it where users actually
+feel it (gesture responsiveness, image loading) and skipped it where they don't.
+
+**Ship the AI where it earns its keep.** LLM calls are slow and expensive relative
+to everything else in the stack. We kept the conversational layer for intent
+capture and garment editing, the part users love, and moved everything that could
+be precomputed to background jobs. The app feels like AI; the latency budget reads
+like a normal e-commerce app.
+
+**Iterate in production, honestly.** Early-stage products don't survive six-month
+roadmaps. We shipped small, watched real behavior, and killed features that didn't
+move usage, including ones we liked.
+
+## Outcome
+
+{/* TODO(saif): when you have shareable numbers, add a metrics list here -
+    e.g. store rating / installs / retention, release cadence / crash-free
+    rate, conversion lift / GMV growth. Until then the copy stays
+    qualitative on purpose: no invented numbers. */}
+
+The product is live on the [web](https://shoppin.app/home) with the apps in
+stores, shipping continuously: features land across iOS, Android, and web in the
+same release cycle, payments clear across three rails, order updates reach people
+on WhatsApp, and the AI layer runs inside a normal e-commerce latency budget. The
+strongest signal is cadence: this is a small team iterating in production every
+week, not a launch that stopped moving.
+
+This case study is ongoing; it grows as the product does.

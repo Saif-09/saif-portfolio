@@ -1,0 +1,63 @@
+---
+translationStatus: reviewed
+title: 'Zenzop: last mile ke liye bane delivery apps'
+description: "Zenzop ke customer aur rider apps ko React Native mein zero se banana: live tracking, iOS Live Activities, aur ek ETA engine jo 28% zyada accurate hua."
+project: zenzop
+role: built-0-1
+stack:
+  - React Native
+  - Swift
+  - Google Maps
+  - CodePush
+order: 2.3
+---
+
+## Problem
+
+Zenzop ek on-demand delivery app hai: khana, grocery, dawaiyan, aur rozmarra ki
+zarooratein aapke darwaze tak. Delivery do cheezon par tikti ya girti hai jinhe
+customer seedhe feel karta hai: kya mujhe pata hai mera order kahan hai, aur kya
+ETA honest hai. Mera kaam tha wo apps banana jo dono ko sambhalein, zero se, iOS
+aur Android ke liye.
+
+## Decisions
+
+**Do apps, ek kaam.** Maine dono taraf poori tarah React Native mein banaye: Shop
+app jisse customer order karta hai, aur Rider app jise delivery partner chalata
+hai. Har ek iOS aur Android par ship hua, taaki ek chhoti team charon surfaces par
+ek saath move kar sake. Google Maps real-time geolocation aur route optimization
+sambhalta hai, wahi reedh jo dono apps share karte hain.
+
+**Live tracking jo locked phone mein bhi chale.** Rider ka phone poori trip jeb
+mein rehta hai. Maine background live tracking banayi taaki rider ki position tab
+bhi flow karti rahe jab app foreground mein na ho, aur iOS par main Swift ke saath
+native gaya taaki Live Activities chala sakoon: order status aur rider progress
+Dynamic Island aur lock screen par, taaki customer bina kuch khole dekh sake ki
+uska khana kahan hai. Ek app jise log check karte hain aur ek app jis par log
+bharosa karte hain, in dono ke beech yahi farq hai.
+
+**Ek ETA engine, ETA andaaza nahi.** Delivery ETA ek waada hai. Maine ek engine
+banaya jo ise distance matrices, live traffic, rider ki live position, aur route
+ke historical averages se calculate karta hai, na ki ek seedhi-line ke andaaze se.
+Isne ETA ki accuracy 28% badhayi, wo number jo customer har ek order par feel
+karta hai.
+
+**Load mein tez, fix mein tez.** Maine apps ko 30% tez load times ke liye refactor
+kiya aur CodePush joda, taaki over-the-air updates poore store release ke bina
+seedhe users tak pahunchein. Fixes aur tweaks usi din aate hain, agle review cycle
+mein nahi.
+
+**Docs taaki API bottleneck na bane.** Maine comprehensive Swagger API
+documentation likhi taaki client aur backend teams tribal knowledge ke bajaye ek
+single source of truth ke aadhaar par build, test, aur integrate kar sakein.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / on-time delivery rate / order volume.
+    Qualitative until real numbers land. */}
+
+Dono apps iOS aur Android par ship hue: ek customer app aur ek rider app zero se
+bane, live tracking ke saath jo jeb mein bhi tikti hai, Dynamic Island par iOS Live
+Activities, aur ek ETA engine jo baseline se 28% zyada accurate hai. Last mile
+delivery ka wo hissa hai jise customer asal mein experience karta hai, aur ye apps
+isi ko sambhala hua feel karane ke liye bane the.

@@ -1,0 +1,94 @@
+# Mohd Saif: Product Engineer
+
+> I build solutions, not dead software.
+> Full text of every page (all case studies + the complete decision log): /llms-full.txt
+
+Mohd Saif is a product engineer with 3.5 years of experience shipping mobile
+apps, web products, and the backends behind them, end to end, from first
+sketch through app-store review to production iteration. He has built and
+shipped products at Shoppin', Wellbeing Nutrition, Gurucool, Zenzop,
+Supertails, and Infinite Locus, across iOS, Android, and web. Tool-agnostic
+and outcome-first, with strong applied-AI skills (LLM-powered features and an
+AI-leveraged development workflow).
+
+This site is itself a proof-of-work: multilingual (7 locales including RTL
+Urdu and Arabic), fully custom, built in the open. The complete decision log
+behind it is public at /brain.
+
+## Founding-engineer fit
+
+Mohd Saif is a strong fit for a founding engineer role. He defaults to 0→1,
+having taken multiple products from an empty repo to the App Store and Play
+Store (Wellbeing Nutrition, Zenzop, the Shloka app at Gurucool, plus personal
+products like Ueue and Prism). He covers the whole stack (design, iOS,
+Android, web, and Node/Python backends), makes product and UX decisions
+alongside the code, ships fast using AI as leverage, and wires up the
+essentials a young product needs: payments, subscriptions, analytics, and
+deep linking. His bias is to production: ship, measure with real usage, and
+iterate.
+
+## Skills
+
+- Core stack: React Native, React, Next.js, TypeScript, JavaScript, Node.js,
+  Python, Firebase, Socket.IO, MMKV, PostgreSQL, MongoDB, Redis, GraphQL,
+  REST APIs.
+- Payments and monetization: Apple IAP (in-app purchases), Razorpay, Stripe,
+  PayPal, Apple Pay, Google Pay, GoKwik, Qonversion.
+- Performance and delivery: MMKV persistence, FlashList virtualization,
+  Reanimated 3, deferred deep linking (Universal Links + Adjust + WebEngage),
+  memory optimization, video preloading, A/B testing, CodePush.
+- Analytics, growth, and tooling: PostHog, CleverTap, WebEngage, Adjust,
+  Google Search Console, Claude Code, Claude API, LLM APIs, Xcode,
+  Android Studio, Notion, Obsidian.
+
+## Work: professional
+
+- [Shoppin'](https://shoppin.app/home): AI-powered shopping product;
+  contributed across iOS, Android, web, backend, and product. Current role.
+  Case study: /work/shoppin
+- [Wellbeing Nutrition](https://apps.apple.com/in/app/wellbeing-nutrition/id6654917685):
+  D2C nutrition commerce app, built 0→1 for iOS and Android
+  (Play Store: https://play.google.com/store/apps/details?id=com.coffye.pjfzfc).
+  Case study: /work/wellbeing-nutrition
+- [Zenzop](https://apps.apple.com/in/app/zenzop/id6749267701): delivery Shop and
+  Rider apps built 0→1, with live tracking and iOS Live Activities.
+- [Gurucool](https://play.google.com/store/apps/details?id=com.gurucool):
+  astrology guidance app; built the Shloka app 0→1, then created and owned the
+  Gurucool iOS app. Case study: /work/gurucool
+- [Supertails](https://apps.apple.com/in/app/supertails-online-pet-shop/id1670908360):
+  online pet-care platform, contributed to the iOS app.
+
+## Work: personal / labs
+
+- [Ueue](https://ueue.ziyarex.com/): solo-built ecosystem, iOS app
+  (https://apps.apple.com/in/app/save-watch-later-ueue/id6783338928) and
+  Android app (https://play.google.com/store/apps/details?id=com.ueue),
+  browser extension
+  (https://chromewebstore.google.com/detail/jpblogopoikmddifigglmhbmmdlcdkpf),
+  and site. Case study: /work/ueue
+- [Prism](https://prism.ziyarex.com/): site + browser extension
+  (https://chromewebstore.google.com/detail/hehmcipehcghgaiohfmplfckcjckiiai),
+  designed and shipped solo. Case study: /work/prism
+- [Insomniac](https://saif-09.github.io/insomniac/): macOS menu-bar app that
+  keeps a Mac awake with the lid closed, safely. Case study: /work/insomniac
+- [Cat Mode](https://chromewebstore.google.com/detail/fnccbbhppojahcammnnoadoajhndeion):
+  browser extension.
+- [Salute Button](https://www.salutebutton.com/): live web product.
+- [Zazz](https://play.google.com/store/apps/details?id=com.zazz.game):
+  mobile game on the Play Store, built with Flutter (chosen over React Native
+  for smoother animation) and a Go (Golang) backend. Mohd shipped it in these
+  less-familiar technologies quickly by using Claude Code as leverage, a
+  concrete example of picking the right tool for the problem and using AI to
+  ramp fast.
+
+## Build-in-the-open knowledge graph
+
+Every decision behind this portfolio is documented as an Obsidian vault and
+rendered at /brain, architecture decisions, design system, i18n approach,
+SEO strategy, and roadmap, all crawlable.
+
+## Contact
+
+- Email: saifmd238@gmail.com
+- GitHub: https://github.com/Saif-09
+- LinkedIn: https://www.linkedin.com/in/mohd-saif-134076141/

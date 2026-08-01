@@ -1,0 +1,81 @@
+---
+title: 'Wellbeing Nutrition: a ground-up app rebuild on Shopify'
+description: "Rebuilding Wellbeing Nutrition's iOS and Android app from scratch in React Native, wired to Shopify through a thin Node data layer and shipped as a seamless update over the old app."
+project: wellbeing-nutrition
+role: built-0-1
+stack:
+  - React Native
+  - Node.js
+  - Shopify Storefront API
+  - GraphQL
+  - GoKwik
+  - CleverTap
+order: 2
+---
+
+## Problem
+
+Wellbeing Nutrition is a D2C nutrition brand with a polished website backed by
+Shopify. What it did not have was a good app. The existing one was built with
+Shopify's App Maker, and the experience showed it: it worked, but it never felt
+smooth. I picked this up at Infinite Locus, and the brief was specific: build a
+brand new iOS and Android app from scratch in React Native that feels fast and
+polished, and do it without a new backend. Orders, catalog, and the dashboard
+would keep running on Shopify, exactly as they did on the web.
+
+The interesting constraint was that last part. Shopify wires cleanly into a web
+React app; there is no comparable path for React Native.
+
+## Decisions
+
+**Talk to Shopify directly, from a client that was not meant to.** Rather than
+force a web SDK where it did not belong, I used Shopify's GraphQL API to connect
+to the store and pull everything the app needed: products, collections, carts,
+orders. That got real Shopify data flowing into a React Native app with no extra
+services sitting in the middle.
+
+**Reshape the data where it is cheap, not where it hurts.** Shopify returns data
+in its own shape, not the shape my screens needed, so the first version fetched
+from Shopify and cleaned every response on the device. It worked, but processing
+each query on the phone made the app heavy and slow, the exact opposite of the
+brief. So I added the one piece the brief did not originally include: a thin Node
+service that sits between Shopify and the app. It runs the heavy GraphQL queries,
+cleans and reshapes the data, and hands the app exactly what it needs through a
+simple API. That single move is what made the app feel smooth. Not everything
+routes through it: light queries still hit Shopify directly from the app, so I
+never pay for a hop I do not need.
+
+**Model the missing pieces with metaobjects.** Where the storefront did not
+natively expose something the app wanted, I created Shopify metaobjects to hold
+it and fed them through the same pipeline, so the app got a clean, consistent data
+model without standing up a custom system of record.
+
+**Ship it as an update, not a new app.** The WBN team wanted the rebuild to reach
+existing users as an update to the old App Maker app, not a fresh listing. I
+worked out how to take over the existing app so the new build shipped in its
+place: same users, same store listing, rating untouched. Nobody had to
+re-download anything, and the switch was invisible from the outside.
+
+**Login and checkout, bought not built.** The no-backend logic applied hardest to
+the two flows I least wanted to hand-roll: login and payments. I integrated GoKwik
+for both, so returning customers got fast phone-number login and a checkout tuned
+for Indian payments, with none of the auth or payment infrastructure landing on me.
+
+**Instrument it, then engage.** I wired in CleverTap for product analytics and
+lifecycle messaging, so the brand could see how the app was really used and reach
+people with push and campaigns from launch, instead of shipping blind and adding
+engagement months later.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / MAU / share of orders via app,
+    repeat-purchase rate or AOV vs web. Qualitative until real numbers land. */}
+
+Both apps shipped and are live on the
+[App Store](https://apps.apple.com/in/app/wellbeing-nutrition/id6654917685) and
+[Google Play](https://play.google.com/store/apps/details?id=com.coffye.pjfzfc),
+delivered as a seamless update over the old App Maker app so the existing audience
+and rating carried over intact. The result is a fast, native-feeling React Native
+app running entirely on Shopify, with a small Node data layer doing the heavy
+lifting only where it counts. The brand kept its commerce stack and finally got an
+app experience that matches its website.

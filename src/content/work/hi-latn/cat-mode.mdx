@@ -1,0 +1,53 @@
+---
+translationStatus: reviewed
+title: 'Cat Mode: billi ko jhapatne do, video chalta rahe'
+description: "Ek Chrome extension jo ek click mein keyboard, mouse, aur touch input freeze kar deta hai taaki ek billi kisi YouTube video par jhapat sake, bina pause, skip, ya kuch khole."
+project: cat-mode
+role: built-0-1
+stack:
+  - Browser extension APIs
+  - JavaScript
+order: 4.6
+---
+
+## Problem
+
+Billi ke liye koi chidiya ya machhli ka video lagao aur maza kareeb das second
+chalta hai: keyboard par pehla panja playback pause kar deta hai, video skip kar
+deta hai, ya kuch random khol deta hai. Billi jeet jaati hai, video ruk jaata hai,
+aur aap ise phir theek karne uthte hain. Cat Mode wo chhota fix hai: billi ko
+screen par jhapatne do, bina uske panje browser ko control kiye.
+
+## Decisions
+
+**Ek click, sab kuch freeze.** Poora product ek toggle hai. Ise dabao aur Cat Mode
+keyboard, mouse, trackpad, scroll, aur touch freeze kar deta hai, taaki video har
+jhapatte, headbutt, aur desk par poore sharir ki phislan ke beech chalta rahe.
+Billi ke beech mein settings mein uljhne ki zaroorat nahi.
+
+**Bahar nikalne ka sirf-insaan wala rasta.** Saara input block karne se ek saaf
+sawaal uthta hai: ise wapas kaise band karein. Unlock ek keyboard shortcut hai
+(default Ctrl+Shift+K, customizable), isliye chuna kyunki ye waisa socha-samjha
+key-combination hai jise ek billi asal mein nahi daba sakti par ek insaan ek second
+mein daba deta hai.
+
+**Local, private, koi account nahi.** Na kuch sign-in karne ko hai, na kuch track
+hota hai. Sab kuch browser mein locally chalta hai. Itna chhota toy aapka data nahi
+chahna chahiye, to nahi chahta.
+
+**Tone ko use case se match karo.** Poori cheez soch-samajhkar bewkoofana hai:
+pounce-proof, billi emoji, chanchal copy, kyunki ek cat-video locker ko serious
+software dikhana galat hota. Sanyam yahi hai ki ek kaam achhe se karo aur use sajao
+mat.
+
+## Outcome
+
+{/* TODO(saif): install count when worth stating. */}
+
+Cat Mode
+[Chrome Web Store](https://chromewebstore.google.com/detail/fnccbbhppojahcammnnoadoajhndeion)
+mein live hai, ek [landing page](https://saif-09.github.io/cat-mode/) ke saath jo
+ise kareeb ek screen mein samjhata hai. Ye thik ek kaam karta hai, input block
+karna taaki ek billi video ka maza le sake bina use tode, aur wo ek kaam
+saaf-suthre tarike se karta hai. Chhota, poora, aur kisi aur cheez ki tarah Chrome
+Web Store review se hokar ship hua.

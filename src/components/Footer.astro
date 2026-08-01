@@ -1,0 +1,239 @@
+---
+import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+import {
+  LOCALES,
+  getLocale,
+  pathForLocale,
+  useTranslations,
+  type Locale,
+} from '../i18n';
+import { profile } from '../data/profile';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const def = getLocale(locale);
+const t = useTranslations(locale);
+const year = new Date().getFullYear();
+const pathname = Astro.url.pathname;
+const contactHref = pathForLocale(locale, '/contact/');
+
+const links = [
+  { label: t.footer.email, href: `mailto:${profile.email}` },
+  { label: t.footer.github, href: profile.github },
+  { label: t.footer.linkedin, href: profile.linkedin },
+  { label: t.footer.resume, href: profile.resume },
+];
+
+const switcherItems = LOCALES.map((l) => ({
+  code: l.code,
+  lang: l.lang,
+  nativeName: l.nativeName,
+  href: pathForLocale(l.code, pathname),
+  current: l.code === locale,
+}));
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    {/* Big CTA: the giant name doubles as the contact call-to-action. */}
+    <div class="footer-cta" data-reveal>
+      <p class="footer-eyebrow">{t.site.role}</p>
+      <a class="footer-wordmark" href={contactHref}>
+        <span>{t.site.name}</span>
+        <span class="footer-wordmark-cta">
+          {t.hero.ctaContact}
+          <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    </div>
+
+    <div class="footer-bar" data-reveal>
+      <nav class="footer-nav" aria-label={t.a11y.footerNav}>
+        <ul class="footer-links" role="list">
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href} rel="noopener">
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <div class="footer-controls">
+        <LanguageSwitcher
+          client:visible
+          label={t.a11y.languageMenu}
+          currentName={def.nativeName}
+          items={switcherItems}
+          menuPlacement="up"
+        />
+        <ThemeToggle client:visible label={t.a11y.themeToggle} />
+      </div>
+    </div>
+
+    <div class="footer-meta">
+      <p class="footer-note">© {year} · {t.footer.note}</p>
+      <p class="footer-note ai-readable">
+        {t.footer.aiReadable} ·
+        <a href="/llms.txt" rel="noopener">llms.txt</a> ·
+        <a href="/llms-full.txt" rel="noopener">llms-full.txt</a>
+      </p>
+      <a class="footer-note footer-top" href="#top">
+        {t.footer.backToTop}
+        <span aria-hidden="true">↑</span>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: 1px solid var(--line);
+    background-color: var(--surface);
+    overflow: clip;
+  }
+
+  .footer-inner {
+    padding-block: var(--space-16) var(--space-8);
+  }
+
+  .footer-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-block-end: var(--space-4);
+  }
+
+  .footer-eyebrow:lang(ar),
+  .footer-eyebrow:lang(ur) {
+    letter-spacing: 0;
+    font-size: 1rem;
+  }
+
+  /* The oversized wordmark - the "big text" signature, and the primary
+     contact CTA on every page. */
+  .footer-wordmark {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    line-height: 0.86;
+  }
+
+  .footer-wordmark > span:first-child {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(3.25rem, 15vw, 13rem);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+  }
+
+  .footer-wordmark-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-block-start: var(--space-5);
+    font-size: clamp(1.125rem, 2.4vw, 1.6rem);
+    font-weight: 500;
+    color: var(--muted);
+    transition: color 0.25s ease;
+  }
+
+  .footer-wordmark:hover > span:first-child {
+    opacity: 0.62;
+  }
+
+  .footer-wordmark:hover .footer-wordmark-cta {
+    color: var(--ink);
+  }
+
+  .footer-wordmark-cta span {
+    transition: transform 0.25s ease;
+  }
+
+  .footer-wordmark:hover .footer-wordmark-cta span {
+    transform: translateX(4px);
+  }
+
+  [dir='rtl'] .footer-wordmark-cta span {
+    transform: scaleX(-1);
+  }
+
+  [dir='rtl'] .footer-wordmark:hover .footer-wordmark-cta span {
+    transform: scaleX(-1) translateX(4px);
+  }
+
+  .footer-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    margin-block-start: var(--space-12);
+    padding-block-start: var(--space-6);
+    border-block-start: 1px solid var(--line);
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+
+  .footer-links a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+
+  .footer-links a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 2px;
+  }
+
+  .footer-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+    margin-block-start: var(--space-8);
+  }
+
+  .footer-note,
+  .footer-note a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: var(--text-small);
+  }
+
+  .footer-note a:hover,
+  a.footer-top:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .footer-top {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+</style>

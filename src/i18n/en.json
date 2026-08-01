@@ -1,0 +1,214 @@
+{
+  "site": {
+    "name": "Mohd Saif",
+    "role": "Product Engineer",
+    "description": "Mohd Saif is a Product Engineer with 3.5+ years building 0→1 mobile and web products end to end: React Native, Next.js, Node.js, and applied AI. Shipped apps at Shoppin', Wellbeing Nutrition, Gurucool, Zenzop, Supertails, and Infinite Locus across iOS, Android, and web."
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "themeToggle": "Switch between light and dark theme",
+    "languageMenu": "Change language",
+    "mainNav": "Main",
+    "footerNav": "Footer"
+  },
+  "home": {
+    "tagline": "Building products with care, from first sketch to shipped software."
+  },
+  "nav": {
+    "home": "Home",
+    "work": "Work",
+    "about": "About",
+    "brain": "Brain",
+    "analytics": "Analytics",
+    "contact": "Contact",
+    "menu": "Open menu",
+    "close": "Close menu"
+  },
+  "hero": {
+    "positioning": "I build solutions, not dead software.",
+    "intro": "3.5 years shipping mobile apps, web products, and the backends behind them, end to end.",
+    "scrollCue": "Scroll",
+    "ctaWork": "See the work",
+    "ctaContact": "Get in touch",
+    "eyebrow": "Product Engineer · 3.5 yrs · builds 0→1",
+    "tagHtml": "I build <b>solutions</b>, not dead software.",
+    "fieldHint": "Move · scroll → bring it alive"
+  },
+  "proof": {
+    "years": "years shipping",
+    "apps": "apps shipped",
+    "products": "live products",
+    "liveNow": "Live right now"
+  },
+  "about": {
+    "heading": "About"
+  },
+  "workIndex": {
+    "title": "Work",
+    "lead": "Eleven shipped things across two tracks: professional builds and personal labs. The featured ones have full case studies.",
+    "description": "All of Mohd Saif's shipped work: professional apps and products, and personal labs."
+  },
+  "work": {
+    "heading": "Selected work",
+    "professional": "Professional",
+    "personal": "Personal / Labs",
+    "built01": "Built 0→1",
+    "contributed": "Contributed",
+    "caseStudy": "Read the case study",
+    "visit": "Visit",
+    "backHome": "Back to home",
+    "nextProject": "Next project",
+    "role": "Role",
+    "stack": "Stack",
+    "links": "Links",
+    "allWork": "All work"
+  },
+  "how": {
+    "heading": "How I work",
+    "stackNote": "Tools I currently reach for"
+  },
+  "ask": {
+    "heading": "Ask this site",
+    "lead": "A small live demo: ask anything about me or my work, answered from my own notes.",
+    "disclaimer": "AI answers from Saif's own project notes.",
+    "inputLabel": "Ask a question about Saif or his work",
+    "placeholder": "Ask about my work…",
+    "send": "Ask",
+    "thinking": "Thinking…",
+    "error": "Something went wrong. Try again in a moment.",
+    "errorCta": "Or email me directly",
+    "rateLimited": "That's a lot of questions at once. Give it a minute and try again.",
+    "q1": "Has Saif built anything 0→1?",
+    "q2": "What's his stack?",
+    "q3": "Which projects use AI?",
+    "q4": "How can I contact him?"
+  },
+  "aboutTeaser": {
+    "statement": "Product first. Engineering in service of it.",
+    "sub": "3.5 years taking ideas through design, code, app-store review, and production. And a conviction that software which ships and stops moving is already dead.",
+    "cta": "The full story"
+  },
+  "contactBand": {
+    "title": "Let's build something alive.",
+    "availability": "Available for work"
+  },
+  "measured": {
+    "heading": "This site, measured",
+    "lead": "A fully custom analytics product: cookieless, private, built into this site. Live below.",
+    "visitorsNow": "Visitors now",
+    "pageviewsToday": "Pageviews today",
+    "topSection": "Top section (24h)",
+    "avgScroll": "Avg scroll depth",
+    "noData": "No data yet",
+    "cta": "See the full dashboard"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Live, public analytics for this site, built from scratch, cookieless, and private by construction.",
+    "lead": "Every number below comes from a first-party tracker, a Postgres events table, and a Redis cache, all built for this site. Public on purpose: measuring is part of the product.",
+    "liveNow": "Live now",
+    "pageviews": "Pageviews",
+    "uniques": "Unique visitors",
+    "rangeLabel": "Time range",
+    "range24h": "24 hours",
+    "range7d": "7 days",
+    "range30d": "30 days",
+    "topSections": "Top sections by attention",
+    "topSectionsSummary": "Total time visitors spent with each homepage section on screen.",
+    "scrollDepth": "Scroll depth",
+    "scrollDepthSummary": "How far down the homepage visitors scroll.",
+    "clickMap": "Click map",
+    "clickMapSummary": "Where visitors click on the homepage, overlaid on a snapshot.",
+    "devices": "Devices",
+    "os": "Operating systems",
+    "browsers": "Browsers",
+    "referrers": "Top referrers",
+    "locales": "Top locales",
+    "funnel": "Funnel",
+    "funnelLanded": "Landed",
+    "funnelViewedWork": "Viewed work",
+    "funnelUsedDemo": "Used the AI demo",
+    "funnelContacted": "Contacted",
+    "viewAsTable": "View as table",
+    "emptyState": "No data yet. This dashboard fills up as people visit.",
+    "sparkline": "Pageviews, last 14 days",
+    "sparklineSummary": "Daily pageviews across the whole site.",
+    "sparklineDay": "Day",
+    "minutes": "Minutes",
+    "sessions": "Sessions",
+    "count": "Clicks",
+    "section": "Section",
+    "depth": "Depth",
+    "loading": "Loading…",
+    "privacyHeading": "What I measure, and what I don't",
+    "privacyMeasureHeading": "Measured",
+    "privacyMeasure": [
+      "Pageviews, sections viewed, scroll depth, and clicks, aggregated",
+      "Device class, OS, browser, and country (from a request header, never the IP)",
+      "Anonymous per-tab session ids that rotate and expire on their own"
+    ],
+    "privacyNotHeading": "Never",
+    "privacyNot": [
+      "No cookies, no fingerprinting, no cross-site anything",
+      "No names, emails, or any personal data: there is nowhere to store them",
+      "No raw IP addresses: the schema has no column for one",
+      "Do Not Track and Global Privacy Control are honored: tracking simply never starts"
+    ]
+  },
+  "open": {
+    "heading": "Built in the open",
+    "lead": "Every decision behind this site, as a living Obsidian vault.",
+    "cta": "Explore the full graph"
+  },
+  "contact": {
+    "heading": "Contact",
+    "lead": "Have a product to build, or a team that ships? Tell me about it.",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "success": "Thanks! Your message is on its way. I usually reply within a day.",
+    "error": "Something went wrong. Email me directly instead.",
+    "rateLimited": "Too many messages at once. Wait a minute and try again, or email me directly.",
+    "errors": {
+      "nameRequired": "Please tell me your name.",
+      "emailRequired": "An email address is required.",
+      "emailInvalid": "That doesn't look like a valid email.",
+      "messageRequired": "A message is required.",
+      "messageShort": "A few more words: what are you building?"
+    },
+    "directLead": "Or reach me directly:"
+  },
+  "footer": {
+    "email": "Email",
+    "github": "GitHub",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "resume": "Résumé",
+    "backToTop": "Back to top",
+    "note": "Designed and built by Mohd Saif.",
+    "aiReadable": "Built to be read by AI"
+  },
+  "brain": {
+    "title": "Brain",
+    "description": "The knowledge graph behind this site: every decision, documented as it was made.",
+    "lead": "This site is built in the open. Every decision behind it lives in a real Obsidian vault, rendered here. Explore the graph, or read the notes below.",
+    "backlinks": "Linked from",
+    "noBacklinks": "Nothing links here yet.",
+    "graphSearchLabel": "Filter the graph by title, type, or tag",
+    "graphSearchPlaceholder": "Filter the graph…",
+    "legendLabel": "Node types",
+    "allNotes": "All notes",
+    "note": "Note",
+    "backToIndex": "All notes",
+    "types": {
+      "moc": "Maps of content",
+      "meta": "Meta",
+      "decision": "Decisions",
+      "feature": "Features",
+      "design": "Design",
+      "phase": "Phases"
+    }
+  }
+}

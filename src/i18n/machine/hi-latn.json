@@ -1,0 +1,211 @@
+{
+  "site": {
+    "name": "Mohd Saif",
+    "role": "Product Engineer",
+    "description": "Mohd Saif ek Product Engineer hain, 3.5+ saal ke experience ke saath, jo 0→1 mobile aur web products end to end banate hain: React Native, Next.js, Node.js, aur applied AI. Shoppin', Wellbeing Nutrition, Gurucool, Zenzop, Supertails, aur Infinite Locus mein iOS, Android, aur web par apps ship kiye."
+  },
+  "a11y": {
+    "skipToContent": "Content pe jaao",
+    "themeToggle": "Light aur dark theme ke beech switch karo",
+    "languageMenu": "Bhasha badlo",
+    "mainNav": "Main",
+    "footerNav": "Footer"
+  },
+  "nav": {
+    "home": "Home",
+    "work": "Kaam",
+    "about": "Mere baare mein",
+    "brain": "Brain",
+    "analytics": "Analytics",
+    "contact": "Contact",
+    "menu": "Menu kholo",
+    "close": "Menu band karo"
+  },
+  "hero": {
+    "positioning": "Main solutions banata hoon, dead software nahi.",
+    "intro": "3.5 saal se mobile apps, web products, aur unke backends end to end ship kar raha hoon.",
+    "scrollCue": "Scroll karo",
+    "ctaWork": "Kaam dekho",
+    "ctaContact": "Contact karo",
+    "eyebrow": "Product Engineer · 3.5 saal · 0→1 banata hai",
+    "tagHtml": "Main <b>solutions</b> banata hoon, dead software nahi.",
+    "fieldHint": "Move · scroll → isse zinda karo"
+  },
+  "proof": {
+    "years": "saal shipping",
+    "apps": "apps ship kiye",
+    "products": "live products",
+    "liveNow": "Abhi live"
+  },
+  "about": {
+    "heading": "Mere baare mein"
+  },
+  "workIndex": {
+    "title": "Kaam",
+    "lead": "Gyarah cheezein ship ki hain, do tracks mein: professional builds aur personal labs. Featured waalon ki full case studies hain.",
+    "description": "Mohd Saif ka saara shipped kaam: professional apps aur products, aur personal labs."
+  },
+  "work": {
+    "heading": "Chuna hua kaam",
+    "professional": "Professional",
+    "personal": "Personal / Labs",
+    "built01": "0→1 banaya",
+    "contributed": "Contribute kiya",
+    "caseStudy": "Case study padho",
+    "visit": "Visit karo",
+    "backHome": "Home pe waapas",
+    "nextProject": "Next project",
+    "role": "Role",
+    "stack": "Stack",
+    "links": "Links",
+    "allWork": "Saara kaam"
+  },
+  "how": {
+    "heading": "Main kaise kaam karta hoon",
+    "stackNote": "Jo tools main abhi use karta hoon"
+  },
+  "ask": {
+    "heading": "Iss site se poocho",
+    "lead": "Ek chhota live demo: mere ya mere kaam ke baare mein kuch bhi poocho, mere apne notes se answer milega.",
+    "disclaimer": "Saif ke apne project notes se AI answers.",
+    "inputLabel": "Saif ya uske kaam ke baare mein ek sawaal poocho",
+    "placeholder": "Mere kaam ke baare mein poocho…",
+    "send": "Poocho",
+    "thinking": "Soch raha hoon…",
+    "error": "Kuch galat ho gaya. Thodi der mein phir try karo.",
+    "errorCta": "Ya mujhe directly email karo",
+    "rateLimited": "Ek saath bahut saare sawaal ho gaye. Ek minute ruko aur phir try karo.",
+    "q1": "Kya Saif ne kuch 0→1 banaya hai?",
+    "q2": "Uska stack kya hai?",
+    "q3": "Kaun se projects mein AI use hua hai?",
+    "q4": "Main usse kaise contact kar sakta hoon?"
+  },
+  "aboutTeaser": {
+    "statement": "Product pehle. Engineering uske support mein.",
+    "sub": "3.5 saal se ideas ko design, code, app-store review, aur production tak le ja raha hoon. Aur yeh conviction hai ki jo software ship hokar ruk jaata hai, woh already dead hai.",
+    "cta": "Poori kahani"
+  },
+  "contactBand": {
+    "title": "Chalo kuch zinda banate hain.",
+    "availability": "Kaam ke liye available"
+  },
+  "measured": {
+    "heading": "Yeh site, measured",
+    "lead": "Ek fully custom analytics product: cookieless, private, iss site mein hi built. Neeche live hai.",
+    "visitorsNow": "Abhi ke visitors",
+    "pageviewsToday": "Aaj ke pageviews",
+    "topSection": "Top section (24 ghante)",
+    "avgScroll": "Avg scroll depth",
+    "noData": "Abhi koi data nahi",
+    "cta": "Poora dashboard dekho"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Iss site ke liye live, public analytics, scratch se banaya gaya, cookieless, aur private by construction.",
+    "lead": "Neeche ka har number ek first-party tracker, ek Postgres events table, aur ek Redis cache se aata hai, sab iss site ke liye banaye gaye hain. Public on purpose: measuring product ka hi part hai.",
+    "liveNow": "Abhi live",
+    "pageviews": "Pageviews",
+    "uniques": "Unique visitors",
+    "rangeLabel": "Time range",
+    "range24h": "24 ghante",
+    "range7d": "7 din",
+    "range30d": "30 din",
+    "topSections": "Attention ke hisaab se top sections",
+    "topSectionsSummary": "Visitors ne har homepage section par screen par kitna total time spend kiya.",
+    "scrollDepth": "Scroll depth",
+    "scrollDepthSummary": "Visitors homepage par kitna neeche scroll karte hain.",
+    "clickMap": "Click map",
+    "clickMapSummary": "Visitors homepage par kahan click karte hain, ek snapshot par overlaid.",
+    "devices": "Devices",
+    "os": "Operating systems",
+    "browsers": "Browsers",
+    "referrers": "Top referrers",
+    "locales": "Top locales",
+    "funnel": "Funnel",
+    "funnelLanded": "Landed",
+    "funnelViewedWork": "Kaam dekha",
+    "funnelUsedDemo": "AI demo use kiya",
+    "funnelContacted": "Contact kiya",
+    "viewAsTable": "Table ke roop mein dekho",
+    "emptyState": "Abhi koi data nahi. Yeh dashboard tab bharega jab log visit karenge.",
+    "sparkline": "Pageviews, pichhle 14 din",
+    "sparklineSummary": "Poori site par daily pageviews.",
+    "sparklineDay": "Din",
+    "minutes": "Minutes",
+    "sessions": "Sessions",
+    "count": "Clicks",
+    "section": "Section",
+    "depth": "Depth",
+    "loading": "Load ho raha hai…",
+    "privacyHeading": "Main kya measure karta hoon, aur kya nahi",
+    "privacyMeasureHeading": "Measured",
+    "privacyMeasure": [
+      "Pageviews, sections dekhe gaye, scroll depth, aur clicks, aggregated",
+      "Device class, OS, browser, aur country (request header se, IP se kabhi nahi)",
+      "Anonymous per-tab session ids jo khud rotate aur expire hote hain"
+    ],
+    "privacyNotHeading": "Kabhi nahi",
+    "privacyNot": [
+      "Koi cookies nahi, koi fingerprinting nahi, koi cross-site kuch bhi nahi",
+      "Koi naam, emails, ya koi personal data nahi: unhe store karne ki koi jagah nahi hai",
+      "Koi raw IP addresses nahi: schema mein unke liye koi column nahi hai",
+      "Do Not Track aur Global Privacy Control ka sammaan kiya jaata hai: tracking bas kabhi shuru nahi hoti"
+    ]
+  },
+  "open": {
+    "heading": "Open mein banaya gaya",
+    "lead": "Iss site ke peeche ka har decision, ek living Obsidian vault ke roop mein.",
+    "cta": "Poora graph explore karo"
+  },
+  "contact": {
+    "heading": "Contact",
+    "lead": "Koi product banana hai, ya aisi team jo ship karti hai? Mujhe uske baare mein batao.",
+    "name": "Naam",
+    "email": "Email",
+    "message": "Message",
+    "send": "Message bhejo",
+    "sending": "Bhej raha hoon…",
+    "success": "Thanks! Aapka message jaa raha hai. Main usually ek din mein reply karta hoon.",
+    "error": "Kuch galat ho gaya. Iske bajaye mujhe directly email karo.",
+    "rateLimited": "Ek saath bahut saare messages. Ek minute ruko aur phir try karo, ya mujhe directly email karo.",
+    "errors": {
+      "nameRequired": "Kripya apna naam batao.",
+      "emailRequired": "Ek email address zaroori hai.",
+      "emailInvalid": "Yeh valid email nahi lagta.",
+      "messageRequired": "Ek message zaroori hai.",
+      "messageShort": "Kuch aur shabd: aap kya bana rahe ho?"
+    },
+    "directLead": "Ya mujhe directly contact karo:"
+  },
+  "footer": {
+    "email": "Email",
+    "github": "GitHub",
+    "twitter": "Twitter",
+    "linkedin": "LinkedIn",
+    "resume": "Resume",
+    "backToTop": "Upar waapas",
+    "builtWith": "Astro se banaya gaya",
+    "note": "Mohd Saif dwara design aur build kiya gaya."
+  },
+  "brain": {
+    "title": "Brain",
+    "description": "Iss site ke peeche ka knowledge graph: har decision, jaise banaya gaya, waise documented.",
+    "lead": "Yeh site open mein banayi gayi hai. Iske peeche ka har decision ek real Obsidian vault mein hai, jo yahan render kiya gaya hai. Graph explore karo, ya neeche notes padho.",
+    "backlinks": "Yahan se linked",
+    "noBacklinks": "Abhi tak kuch bhi yahan link nahi karta.",
+    "graphSearchLabel": "Graph ko title, type, ya tag se filter karo",
+    "graphSearchPlaceholder": "Graph filter karo…",
+    "legendLabel": "Node types",
+    "allNotes": "Saare notes",
+    "note": "Note",
+    "backToIndex": "Saare notes",
+    "types": {
+      "moc": "Maps of content",
+      "meta": "Meta",
+      "decision": "Decisions",
+      "feature": "Features",
+      "design": "Design",
+      "phase": "Phases"
+    }
+  }
+}

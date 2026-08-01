@@ -1,0 +1,149 @@
+---
+import Base from '../../layouts/Base.astro';
+import AnalyticsDashboard from '../dashboard/AnalyticsDashboard';
+import { useTranslations, type Locale } from '../../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const a = t.analytics;
+---
+
+<Base locale={locale} title={`${a.title} · ${t.site.name}`} description={a.description}>
+  <div class="analytics container">
+    <header class="analytics-header">
+      <h1 class="analytics-title">{a.title}</h1>
+      <p class="analytics-lead">{a.lead}</p>
+    </header>
+
+    <AnalyticsDashboard
+      client:load
+      snapshot="/analytics-snapshot.jpg"
+      t={{
+        liveNow: a.liveNow,
+        pageviews: a.pageviews,
+        uniques: a.uniques,
+        ranges: { '24h': a.range24h, '7d': a.range7d, '30d': a.range30d },
+        rangeLabel: a.rangeLabel,
+        topSections: a.topSections,
+        topSectionsSummary: a.topSectionsSummary,
+        scrollDepth: a.scrollDepth,
+        scrollDepthSummary: a.scrollDepthSummary,
+        clickMap: a.clickMap,
+        clickMapSummary: a.clickMapSummary,
+        devices: a.devices,
+        os: a.os,
+        browsers: a.browsers,
+        referrers: a.referrers,
+        locales: a.locales,
+        funnel: a.funnel,
+        funnelSteps: {
+          landed: a.funnelLanded,
+          viewedWork: a.funnelViewedWork,
+          usedDemo: a.funnelUsedDemo,
+          contacted: a.funnelContacted,
+        },
+        viewAsTable: a.viewAsTable,
+        emptyState: a.emptyState,
+        sparkline: a.sparkline,
+        sparklineSummary: a.sparklineSummary,
+        sparklineDay: a.sparklineDay,
+        minutes: a.minutes,
+        sessions: a.sessions,
+        count: a.count,
+        section: a.section,
+        depth: a.depth,
+        loading: a.loading,
+      }}
+    />
+
+    <section class="analytics-privacy" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">{a.privacyHeading}</h2>
+      <div class="analytics-privacy-cols">
+        <div>
+          <h3>{a.privacyMeasureHeading}</h3>
+          <ul role="list">
+            {a.privacyMeasure.map((line: string) => <li>{line}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h3>{a.privacyNotHeading}</h3>
+          <ul role="list">
+            {a.privacyNot.map((line: string) => <li>{line}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .analytics {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .analytics-title {
+    font-size: var(--text-h1);
+  }
+
+  .analytics-lead {
+    margin-block-start: var(--space-4);
+    color: var(--muted);
+    max-inline-size: var(--measure);
+  }
+
+  .analytics-privacy {
+    margin-block-start: var(--space-16);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--surface);
+    padding: var(--space-8);
+  }
+
+  .analytics-privacy h2 {
+    font-size: 1.25rem;
+  }
+
+  .analytics-privacy h3 {
+    font-family: var(--font-text);
+    font-size: var(--text-small);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-block-end: var(--space-3);
+  }
+
+  .analytics-privacy h3:lang(ar),
+  .analytics-privacy h3:lang(ur) {
+    letter-spacing: 0;
+  }
+
+  .analytics-privacy-cols {
+    margin-block-start: var(--space-6);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  @media (min-width: 48rem) {
+    .analytics-privacy-cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .analytics-privacy ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    color: var(--muted);
+  }
+
+  .analytics-privacy li::before {
+    content: '- ';
+    color: var(--line);
+  }
+</style>

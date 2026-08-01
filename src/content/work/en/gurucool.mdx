@@ -1,0 +1,74 @@
+---
+title: 'Gurucool: shipping Shloka, then bringing the app to iOS'
+description: "At Gurucool: building Shloka, a Bhagavad Gita engagement app, from scratch on iOS and Android, then creating the company's iOS app from an Android-only React Native codebase and owning it end to end."
+project: gurucool
+role: built-0-1
+stack:
+  - React Native
+  - GraphQL
+  - Agora
+  - CleverTap
+order: 2.5
+---
+
+## Problem
+
+I joined Gurucool as an app engineer and got two very different mandates back to
+back. First, build a brand new app from scratch. Then, fix the one the company
+already had: a React Native product that shipped on Android but had no iOS version
+at all.
+
+## Shloka, built from scratch
+
+My first project was Shloka, an app built to bring users back to something calm
+and daily: the shlokas of the Bhagavad Gita. The backend held the full set of
+verses, and each one carried its translation, transliteration, commentary, and
+meaning. I built the app around that: a clean reading experience that pulls a
+shloka and its layers of context from the backend and presents them simply. I
+built and shipped it on both iOS and Android from nothing.
+
+## Bringing Gurucool to iOS
+
+Gurucool itself is an astrology guidance app: people consult certified astrologers
+about love, career, marriage, health, and money through daily horoscopes, chat,
+on-call sessions, and live video, drawing on Vedic astrology, tarot, numerology,
+and vastu. That focus on real-time consultation is exactly why the app leans so
+hard on chat and live sessions, the two things I went on to build and fix.
+
+Then I moved onto the Gurucool app team. The app was a single React Native
+codebase, but only Android had ever been built from it. There was no iOS app, and,
+as I found out, no ios folder in the project at all. So the first job was to make
+iOS exist: I created the ios project and its native scaffolding inside the existing
+React Native repo, then worked through the long tail of everything that breaks when
+a codebase has never targeted iOS. Pods would not install, the app would not build,
+the app would not start. I fixed each issue until it compiled and ran, brought the
+iOS app up to full parity with Android, and published it to the App Store.
+
+From there, iOS was mine. I owned the iOS app end to end and co-handled both
+platforms with the team.
+
+## What I worked on
+
+**A chat system on GraphQL subscriptions.** I built the app's chat so messages
+ride GraphQL subscriptions, keeping conversations live without polling.
+
+**Live video.** Agora was already integrated but buggy. I worked through the issues
+and fixed the bugs so live sessions actually held up.
+
+**CleverTap for engagement.** I integrated CleverTap so the team could see how the
+app was used and run lifecycle messaging.
+
+**Structure and optimization.** I reorganized the app's files and folders and
+cleaned up the project so it was maintainable and fast, not just working.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / DAU / session length or retention for
+    Shloka and the Gurucool app. Qualitative until real numbers land. */}
+
+Both apps shipped. Shloka went out on iOS and Android from a standing start. The
+[Gurucool app](https://play.google.com/store/apps/details?id=com.gurucool) went
+from Android-only to a full iOS presence I built and published from a codebase that
+had never compiled for iOS, then ran with me as the iOS owner across a two-platform
+team. The through-line is simple: I take an app from wherever it is, missing,
+half-built, or messy, to shipped and maintainable.

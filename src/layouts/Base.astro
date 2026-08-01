@@ -1,0 +1,202 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { displayFontCss } from '../lib/inline-font';
+import SpeedInsights from '@vercel/speed-insights/astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MotionRoot from '../components/MotionRoot';
+import TrackerRoot from '../components/track/TrackerRoot';
+import {
+  LOCALES,
+  getLocale,
+  pathForLocale,
+  useTranslations,
+  type Locale,
+} from '../i18n';
+import { profile, keywords, allSkills } from '../data/profile';
+
+interface Props {
+  locale: Locale;
+  title?: string;
+  description?: string;
+  /** Page-specific OG image path; defaults to the locale's home OG. */
+  ogImage?: string;
+  /** Additional JSON-LD blocks (e.g. CreativeWork on case studies). */
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { locale, jsonLd = [] } = Astro.props;
+const def = getLocale(locale);
+const t = useTranslations(locale);
+
+const title = Astro.props.title ?? `${t.site.name} · ${t.site.role}`;
+const description = Astro.props.description ?? t.site.description;
+
+const pathname = Astro.url.pathname;
+const canonical = new URL(pathname, Astro.site);
+
+/* Only the active locale's script font is declared and preloaded -
+   Latin-locale visitors never download a Noto font. */
+const ogImage = new URL(Astro.props.ogImage ?? `/og/home-${locale}.png`, Astro.site);
+
+/** og:locale wants language_TERRITORY. */
+const OG_LOCALES: Record<string, string> = {
+  en: 'en_US',
+  hi: 'hi_IN',
+  kn: 'kn_IN',
+  ur: 'ur_PK',
+  te: 'te_IN',
+  ar: 'ar_AE',
+  'hi-latn': 'hi_IN',
+};
+const ogLocale = OG_LOCALES[locale] ?? 'en_US';
+
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: profile.role,
+  description: t.site.description,
+  email: `mailto:${profile.email}`,
+  url: Astro.site?.toString(),
+  image: new URL('/favicons/favicon-512.png', Astro.site).toString(),
+  sameAs: [profile.github, profile.linkedin],
+  knowsAbout: allSkills,
+  knowsLanguage: ['en', 'hi', 'ur'],
+  worksFor: { '@type': 'Organization', name: "Shoppin'" },
+  hasOccupation: {
+    '@type': 'Occupation',
+    name: 'Product Engineer',
+    skills: allSkills.join(', '),
+  },
+};
+
+const jsonLdBlocks = [personJsonLd, ...jsonLd];
+
+const scriptFont = def.scriptFont;
+const scriptFontCss = scriptFont
+  ? `@font-face{font-family:'${scriptFont.family}';src:url('${scriptFont.file}') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;}:root{--font-script:'${scriptFont.family}';}`
+  : '';
+---
+
+<!doctype html>
+<html lang={def.lang} dir={def.dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Set the theme before first paint - never a flash of the wrong theme.
+        Re-applied after view-transition swaps (the new document's <html>
+        attributes replace ours, dropping data-theme). */}
+    <script is:inline>
+      (function () {
+        function applyTheme() {
+          var theme = 'light';
+          try {
+            var stored = localStorage.getItem('theme');
+            theme =
+              stored === 'light' || stored === 'dark'
+                ? stored
+                : window.matchMedia('(prefers-color-scheme: dark)').matches
+                  ? 'dark'
+                  : 'light';
+          } catch (e) {}
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+        applyTheme();
+        document.addEventListener('astro:after-swap', applyTheme);
+      })();
+    </script>
+
+    {/* Display face rides along with the document - see lib/inline-font. */}
+    <style set:html={displayFontCss} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <meta name="author" content={profile.name} />
+    <meta name="creator" content={profile.name} />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
+    {
+      LOCALES.map((l) => (
+        <link
+          rel="alternate"
+          hreflang={l.lang}
+          href={new URL(pathForLocale(l.code, pathname), Astro.site)}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={new URL(pathForLocale('en', pathname), Astro.site)}
+    />
+    <link rel="icon" href="/favicons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicons/favicon-16.png" sizes="16x16" type="image/png" />
+    <link rel="apple-touch-icon" href="/favicons/favicon-180.png" />
+
+    {
+      scriptFont && (
+        <link
+          rel="preload"
+          href={scriptFont.file}
+          as="font"
+          type="font/woff2"
+          crossorigin
+        />
+      )
+    }
+    {scriptFont && <style set:html={scriptFontCss} />}
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={t.site.name} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {
+      jsonLdBlocks.map((block) => (
+        <script type="application/ld+json" set:html={JSON.stringify(block)} />
+      ))
+    }
+
+    <ClientRouter />
+    <SpeedInsights />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">{t.a11y.skipToContent}</a>
+    <Header locale={locale} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <MotionRoot client:idle />
+    <TrackerRoot client:idle />
+  </body>
+</html>
+
+<style is:global>
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1;
+    outline: none;
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+title: 'Prism: extension and site'
+description: 'A second solo-shipped ecosystem: browser extension and website, designed and built end to end.'
+project: prism
+role: built-0-1
+stack:
+  - React
+  - Node.js
+  - Browser extension APIs
+order: 4
+---
+
+## Problem
+
+Shipping one solo ecosystem could be luck; shipping a second one is a
+process. Prism, a [site](https://prism.ziyarex.com/) and
+[browser extension](https://chromewebstore.google.com/detail/hehmcipehcghgaiohfmplfckcjckiiai),
+was built to prove the repeatable part: idea → product → shipped, without a
+team and without a year.
+
+## Decisions
+
+**Reuse the playbook, not the code.** The lessons from Ueue carried over:
+surface-per-strength, ruthless scope, states as features. But Prism made
+its own technical calls where the product demanded different ones.
+
+**Extension-first.** Prism's value lives in the browser, so the extension
+is the product and the site is its front door, not the other way around.
+That ordering decided everything downstream: onboarding happens where the
+value is, and the site sells the click, not the scroll.
+
+**Ship, then sharpen.** First public version early, then iterate against
+real usage rather than imagined users.
+
+## Outcome
+
+{/* TODO(saif): usage metrics slot, installs / weekly actives, and the
+    iteration story, when you want to share them. */}
+
+Prism is live end to end: the extension in the Chrome Web Store, the site
+in production. The second ecosystem shipped faster than the first, the
+playbook held, which was the hypothesis. What Ueue proved possible, Prism
+proved repeatable.

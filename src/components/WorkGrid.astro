@@ -1,0 +1,98 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import { useTranslations, type Locale } from '../i18n';
+import { byTrack } from '../data/projects';
+
+interface Props {
+  locale: Locale;
+  /** h2 on /work (page has its own h1); h3 inside a homepage section. */
+  headingTag?: 'h2' | 'h3';
+}
+
+const { locale, headingTag = 'h2' } = Astro.props;
+const t = useTranslations(locale);
+const Heading = headingTag;
+
+const tracks = [
+  { label: t.work.professional, projects: byTrack('professional') },
+  { label: t.work.personal, projects: byTrack('personal') },
+];
+---
+
+<div class="work-grid-wrap">
+  {
+    tracks.map((track) => (
+      <section class="track">
+        <Heading class="track-heading">{track.label}</Heading>
+        <div class="track-grid">
+          {track.projects.map((project) => (
+            <div data-reveal>
+              <ProjectCard locale={locale} project={project} />
+            </div>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .track + .track {
+    margin-block-start: var(--space-12);
+  }
+
+  .track-heading {
+    font-size: var(--text-small);
+    font-family: var(--font-text);
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-4);
+  }
+
+  .track-heading:lang(ar),
+  .track-heading:lang(ur) {
+    letter-spacing: 0;
+  }
+
+  .track-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--grid-gutter);
+    align-items: stretch;
+  }
+
+  .track-grid > div {
+    block-size: 100%;
+  }
+
+  @media (min-width: 40rem) {
+    .track-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* No orphaned lone card in a 2-col row: the odd last card goes wide. */
+    .track-grid > div:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .track-grid > div:last-child:nth-child(odd) {
+      grid-column: auto;
+    }
+
+    /* 3-col: if the last row would hold a single card, stretch it across
+       the remaining two tracks instead. (5 items → 3 + wide pair) */
+    .track-grid > div:last-child:nth-child(3n + 2) {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .track-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import WorkRows from '../WorkRows.astro';
+import { useTranslations, type Locale } from '../../i18n';
+import { byTrack } from '../../data/projects';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const professional = byTrack('professional');
+const personal = byTrack('personal');
+---
+
+<Base
+  locale={locale}
+  title={`${t.nav.work} · ${t.site.name}`}
+  description={t.workIndex.description}
+>
+  <div class="work-index">
+    <header class="container work-index-header">
+      <h1 class="sec-label">
+        <span class="sec-n" aria-hidden="true">(01 → {String(professional.length + personal.length).padStart(2, '0')})</span><br />
+        {t.workIndex.title}
+      </h1>
+      <p class="page-lead">{t.workIndex.lead}</p>
+    </header>
+
+    <h2 class="container work-track-label eyebrow">{t.work.professional}</h2>
+    <WorkRows locale={locale} projects={professional} />
+
+    <h2 class="container work-track-label eyebrow">{t.work.personal}</h2>
+    <WorkRows locale={locale} projects={personal} startIndex={professional.length} />
+  </div>
+</Base>
+
+<style>
+  .work-index {
+    padding-block: var(--space-12) var(--space-16);
+  }
+
+  .work-index-header {
+    margin-block-end: var(--space-12);
+  }
+
+  .work-track-label {
+    margin-block: var(--space-12) var(--space-4);
+  }
+</style>

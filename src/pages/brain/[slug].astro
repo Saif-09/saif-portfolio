@@ -1,0 +1,13 @@
+---
+import BrainNotePage from '../../components/pages/BrainNotePage.astro';
+import { getBrainNotes } from '../../lib/brain';
+
+export async function getStaticPaths() {
+  const notes = await getBrainNotes();
+  return notes.map((note) => ({ params: { slug: note.slug }, props: { note } }));
+}
+
+const { note } = Astro.props;
+---
+
+<BrainNotePage locale="en" note={note} />

@@ -1,0 +1,112 @@
+---
+import { useTranslations, type Locale } from '../i18n';
+import { stats } from '../data/profile';
+import { projects } from '../data/projects';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+/* Stats are derived from the projects data - real integers, always. */
+const items = [
+  { value: stats.yearsExperience, label: t.proof.years },
+  { value: stats.appsShipped, label: t.proof.apps },
+  { value: stats.liveProducts, label: t.proof.products },
+];
+
+/* One outbound link per live thing - quick, scannable proof. */
+const liveLinks = [
+  { name: "Shoppin'", href: 'https://shoppin.app/home', favicon: '/favicons/shoppin.png' },
+  { name: 'Wellbeing Nutrition', href: 'https://apps.apple.com/in/app/wellbeing-nutrition/id6654917685', favicon: null },
+  { name: 'Ueue', href: 'https://ueue.ziyarex.com/', favicon: '/favicons/ueue.png' },
+  { name: 'Prism', href: 'https://prism.ziyarex.com/', favicon: '/favicons/prism.png' },
+  { name: 'Salute Button', href: 'https://www.salutebutton.com/', favicon: '/favicons/salute-button.png' },
+];
+---
+
+<section id="proof" class="proof">
+  <div class="container proof-inner">
+    <dl class="proof-stats">
+      {
+        items.map((item) => (
+          <div class="proof-stat" data-reveal>
+            <dt class="proof-label">{item.label}</dt>
+            <dd class="proof-value">{item.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <div class="proof-live" data-reveal>
+      <p class="proof-live-label">{t.proof.liveNow}</p>
+      <ul class="proof-links" role="list">
+        {
+          liveLinks.map((link) => (
+            <li>
+              <a class="chip" href={link.href} rel="noopener">
+                {link.favicon && (
+                  <img class="chip-favicon" src={link.favicon} alt="" width="16" height="16" loading="lazy" />
+                )}
+                {link.name}
+                <span aria-hidden="true" class="chip-arrow">↗</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .proof {
+    border-block: 1px solid var(--line);
+    background-color: var(--surface);
+  }
+
+  .proof-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+    padding-block: var(--space-8);
+  }
+
+  .proof-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+  }
+
+  .proof-stat {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .proof-value {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 550;
+    line-height: 1.1;
+  }
+
+  .proof-label {
+    color: var(--muted);
+    font-size: var(--text-small);
+  }
+
+  .proof-live-label {
+    color: var(--muted);
+    font-size: var(--text-small);
+    margin-block-end: var(--space-2);
+  }
+
+  .proof-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+</style>

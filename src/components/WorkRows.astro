@@ -1,0 +1,53 @@
+---
+import ProjectThumb from './media/ProjectThumb.astro';
+import { useTranslations, pathForLocale, type Locale } from '../i18n';
+import type { Project } from '../data/projects';
+
+interface Props {
+  locale: Locale;
+  projects: Project[];
+  /** Continue numbering across multiple lists on one page. */
+  startIndex?: number;
+}
+
+const { locale, projects, startIndex = 0 } = Astro.props;
+const t = useTranslations(locale);
+
+const rowHref = (p: Project) =>
+  p.featured
+    ? pathForLocale(locale, `/work/${p.id}/`)
+    : (p.links[0]?.href ?? pathForLocale(locale, '/work/'));
+
+const roleLabel = (p: Project) => (p.role === 'built-0-1' ? t.work.built01 : t.work.contributed);
+---
+
+<div class="work-rows">
+  {
+    projects.map((project, i) => (
+      <>
+        <a
+          class="work-row"
+          href={rowHref(project)}
+          rel={project.featured ? undefined : 'noopener'}
+          data-reveal
+        >
+          <span class="container work-row-inner">
+            <span class="work-row-n" aria-hidden="true">
+              {String(startIndex + i + 1).padStart(2, '0')}
+            </span>
+            <span>
+              <span class="work-row-name">{project.name}</span>
+              <span class="work-row-tags">
+                {roleLabel(project)} · {project.scope}
+              </span>
+            </span>
+            <span class="work-row-arrow" aria-hidden="true">→</span>
+          </span>
+          <span class="work-row-thumb" aria-hidden="true">
+            <ProjectThumb project={project} />
+          </span>
+        </a>
+      </>
+    ))
+  }
+</div>

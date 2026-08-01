@@ -1,0 +1,81 @@
+---
+translationStatus: reviewed
+title: 'Gurucool: Shloka ship karna, phir app ko iOS par laana'
+description: "Gurucool mein: Shloka, ek Bhagavad Gita engagement app, ko iOS aur Android par scratch se banana, phir company ke iOS app ko ek Android-only React Native codebase se banana aur use poori tarah own karna."
+project: gurucool
+role: built-0-1
+stack:
+  - React Native
+  - GraphQL
+  - Agora
+  - CleverTap
+order: 2.5
+---
+
+## Problem
+
+Main Gurucool mein ek app engineer ke taur par join hua aur mujhe lagatar do bahut
+alag mandate mile. Pehla, scratch se ek bilkul naya app banao. Phir, us app ko fix
+karo jo company ke paas pehle se tha: ek React Native product jo Android par ship
+hota tha par jiska koi iOS version tha hi nahi.
+
+## Shloka, scratch se banaya
+
+Mera pehla project Shloka tha, ek aisa app jo users ko kisi calm aur daily cheez ki
+taraf wapas laane ke liye banaya gaya tha: Bhagavad Gita ke shlok. Backend mein
+shloko ka poora collection tha, aur har ek ke saath uska translation,
+transliteration, commentary, aur meaning tha. Maine app ko isi ke ird-gird banaya:
+ek clean reading experience jo backend se ek shlok aur uske context ki layers
+kheenchta hai aur unhe simply present karta hai. Maine ise zero se iOS aur Android
+dono par banaya aur ship kiya.
+
+## Gurucool ko iOS par laana
+
+Gurucool khud ek astrology guidance app hai: log certified jyotishiyon se pyaar,
+career, shaadi, health, aur paise ke baare mein daily horoscope, chat, on-call
+sessions, aur live video ke through salah lete hain, jo Vedic astrology, tarot,
+numerology, aur vastu par based hai. Real-time consultation par yahi focus wajah
+hai ki app chat aur live sessions par itna depend karta hai, wahi do cheezein
+jinhe maine aage banaya aur fix kiya.
+
+Phir main Gurucool app team mein aaya. App ek akela React Native codebase tha, par
+usse sirf Android hi kabhi build hua tha. Koi iOS app nahi tha, aur, jaisa mujhe
+pata chala, project mein koi ios folder hi nahi tha. To pehla kaam tha iOS ko
+existence mein laana: maine existing React Native repo ke andar ios project aur
+uska native scaffolding banaya, phir us har cheez ki lambi kataar se guzra jo tab
+tootti hai jab koi codebase kabhi iOS ko target hi nahi karta. Pods install nahi ho
+rahe the, app build nahi ho raha tha, app start nahi ho raha tha. Maine har issue
+ko tab tak fix kiya jab tak ye compile aur run na ho gaya, iOS app ko Android ke
+poore level tak laya, aur use App Store par publish kiya.
+
+Wahan se, iOS mera tha. Maine iOS app ko poori tarah own kiya aur team ke saath
+dono platforms ko milkar handle kiya.
+
+## Maine kin cheezon par kaam kiya
+
+**GraphQL subscriptions par ek chat system.** Maine app ki chat aisi banayi ki
+messages GraphQL subscriptions par chalein, taaki baat-cheet bina polling ke live
+rahe.
+
+**Live video.** Agora pehle se integrated tha par buggy tha. Maine issues par kaam
+kiya aur bugs fix kiye taaki live sessions asal mein tik saken.
+
+**Engagement ke liye CleverTap.** Maine CleverTap integrate kiya taaki team dekh
+sake ki app kaise use ho raha hai aur lifecycle messaging chala sake.
+
+**Structure aur optimization.** Maine app ki files aur folders dobara organize kiye
+aur project ko clean kiya taaki ye sirf kaam karne wala nahi, balki maintainable
+aur fast ho.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / DAU / session length or retention for
+    Shloka and the Gurucool app. Qualitative until real numbers land. */}
+
+Dono apps ship hue. Shloka zero se iOS aur Android par nikla.
+[Gurucool app](https://play.google.com/store/apps/details?id=com.gurucool)
+Android-only se ek poori iOS presence tak pahuncha jise maine ek aise codebase se
+banaya aur publish kiya jo kabhi iOS ke liye compile hi nahi hua tha, phir ye mere
+saath iOS owner ke taur par ek do-platform team mein chala. Saar seedha hai: main
+ek app ko jahan bhi wo ho, missing, aadha-bana, ya messy, wahan se shipped aur
+maintainable tak le jaata hoon.

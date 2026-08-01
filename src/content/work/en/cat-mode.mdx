@@ -1,0 +1,50 @@
+---
+title: 'Cat Mode: let the cat pounce, keep the video playing'
+description: "A Chrome extension that freezes keyboard, mouse, and touch input with one click so a cat can bat at a YouTube video without pausing, skipping, or launching anything."
+project: cat-mode
+role: built-0-1
+stack:
+  - Browser extension APIs
+  - JavaScript
+order: 4.6
+---
+
+## Problem
+
+Put a bird or fish video on for a cat and the fun lasts about ten seconds: the
+first paw on the keyboard pauses playback, skips the video, or opens something
+random. The cat wins, the video stops, and you get up to fix it again. Cat Mode is
+the small fix: let the cat pounce at the screen without their paws controlling the
+browser.
+
+## Decisions
+
+**One click, everything frozen.** The whole product is one toggle. Hit it and Cat
+Mode freezes keyboard, mouse, trackpad, scroll, and touch, so the video keeps
+playing through every pounce, headbutt, and full-body slide across the desk. No
+settings to wade through mid-cat.
+
+**A human-only way out.** Blocking all input raises an obvious question: how do you
+turn it back off. The unlock is a keyboard shortcut (Ctrl+Shift+K by default,
+customizable), chosen because it is the kind of deliberate key combination a cat
+cannot realistically hit but a human presses in a second.
+
+**Local, private, no accounts.** There is nothing to sign into and nothing tracked.
+Everything runs locally in the browser. A toy this small should not want your data,
+so it does not.
+
+**Match the tone to the use case.** The whole thing is deliberately silly:
+pounce-proof, cat emoji, playful copy, because pretending a cat-video locker is
+serious software would be the wrong call. The restraint is doing one job well and
+not dressing it up.
+
+## Outcome
+
+{/* TODO(saif): install count when worth stating. */}
+
+Cat Mode is live in the
+[Chrome Web Store](https://chromewebstore.google.com/detail/fnccbbhppojahcammnnoadoajhndeion)
+with a [landing page](https://saif-09.github.io/cat-mode/) that explains it in about
+one screen. It does exactly one thing, block input so a cat can enjoy a video
+without breaking it, and does that one thing cleanly. Small, finished, and shipped
+through Chrome Web Store review like anything else.

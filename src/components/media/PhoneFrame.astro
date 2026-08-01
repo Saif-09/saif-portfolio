@@ -1,0 +1,92 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  /** Path under /public - renders automatically once the file exists. */
+  screen: string;
+  name: string;
+  /** Compact variant for card thumbnails. */
+  small?: boolean;
+}
+
+const { screen, name, small = false } = Astro.props;
+const hasScreen = fs.existsSync(path.join('public', screen));
+---
+
+<figure class:list={['phone-frame', { 'phone-frame--small': small }]} aria-hidden={hasScreen ? undefined : 'true'}>
+  <div class="phone-notch" aria-hidden="true"></div>
+  {
+    hasScreen ? (
+      <img src={screen} alt={`${name} app screenshot`} loading="lazy" decoding="async" />
+    ) : (
+      <div class="phone-placeholder">
+        {/* Screenshot slot: drop the real capture at public{screen} */}
+        <span class="phone-placeholder-name">{name}</span>
+      </div>
+    )
+  }
+</figure>
+
+<style>
+  .phone-frame {
+    position: relative;
+    aspect-ratio: 9 / 19;
+    inline-size: min(100%, 15rem);
+    border: 3px solid color-mix(in oklab, var(--ink) 75%, var(--bg));
+    border-radius: 28px;
+    overflow: hidden;
+    background:
+      radial-gradient(
+        120% 80% at 30% 15%,
+        color-mix(in oklab, var(--muted) 22%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(160deg, var(--surface), color-mix(in oklab, var(--surface) 70%, var(--ink) 8%));
+    box-shadow: 0 16px 48px rgb(0 0 0 / 0.16);
+  }
+
+  .phone-frame--small {
+    inline-size: min(60%, 9rem);
+    border-width: 2px;
+    border-radius: 18px;
+  }
+
+  .phone-notch {
+    position: absolute;
+    inset-block-start: 8px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    inline-size: 34%;
+    block-size: 14px;
+    border-radius: 999px;
+    background-color: color-mix(in oklab, var(--ink) 75%, var(--bg));
+  }
+
+  .phone-frame--small .phone-notch {
+    block-size: 9px;
+    inset-block-start: 6px;
+  }
+
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .phone-placeholder {
+    block-size: 100%;
+    display: grid;
+    place-items: center;
+    padding: var(--space-4);
+  }
+
+  .phone-placeholder-name {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: 1.1rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>

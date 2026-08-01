@@ -1,0 +1,62 @@
+---
+translationStatus: reviewed
+title: 'Ueue: ek akele banaya gaya product ecosystem'
+description: 'iOS aur Android apps, ek browser extension, aur ek website jise ek insaan ne design, build, aur ship kiya.'
+project: ueue
+role: built-0-1
+stack:
+  - React Native
+  - React
+  - Node.js
+  - Browser extension APIs
+order: 3
+---
+
+## Problem
+
+Zyadatar side projects repo ki tarah mar jaate hain. Ueue iske ulat ka ek
+socha-samjha exercise tha: ek idea lo aur use ek *poore product ecosystem* ki tarah
+ship karo, ek
+[iOS](https://apps.apple.com/in/app/save-watch-later-ueue/id6783338928) aur [Android](https://play.google.com/store/apps/details?id=com.ueue) par apps, ek
+[browser extension](https://chromewebstore.google.com/detail/jpblogopoikmddifigglmhbmmdlcdkpf),
+aur ek [website](https://ueue.ziyarex.com/), jismein ek insaan product, design,
+engineering, aur release karta hai.
+
+Ueue khud ek save-for-later app hai: un sab cheezon ke liye ek calm queue jinhe aap
+baad mein dekhna chahte hain. Ye kisi bhi app se capture karta hai, aapke saves ko
+lists mein sort karta hai, unhe gentle schedules par wapas saamne laata hai, aur
+yahan tak ki wo chun sakta hai jo aapke paas asal mein maujood time mein fit ho,
+taaki jo cheezein aap save karte hain wo ek bookmark kabristan mein dabne ke bajaye
+poori hon. Mobile aur web sync mein rehte hain, ek browser extension maujooda tab
+ko ek click mein save karta hai, aur bina feed wala ek focus mode ise scroll karne
+ke bajaye poora karne ke baare mein rakhta hai.
+
+Constraint *hi* brief tha: ek saath har role nibhana aur phir bhi kuch aisa ship
+karna jo log aaj install kar sakein, iske liye kya chahiye?
+
+## Decisions
+
+**Teen surfaces, ek reedh.** App, extension, aur site ek hi backend aur ek hi
+product vocabulary share karte hain. Har surface wahi karta hai jismein wo unique
+tareeke se achha hai, doosron ki nakal karne ke bajaye, extension wahan rehta hai
+jahan user ka dhyaan pehle se hai, app dedicated session ka maalik hai, site
+samjhati aur onboard karti hai.
+
+**Ek solo dev ki tarah scope karo, ek team ki tarah polish karo.** Feature list
+berahmi se chhoti; states (empty, loading, error, offline) ko first-class feature
+ki tarah maana gaya. Ek chhota product jo behtareen tareeke se behave karta hai, ek
+bade se behtar hai jo zyadatar kaam karta hai.
+
+**Asli ship karo, asli seekho.** Play Store review, Chrome Web Store review, ek live
+domain, unglamorous production details hi asal baat hain. Jo side projects inhe
+chhod dete hain wo kuch saabit nahi karte.
+
+## Outcome
+
+{/* TODO(saif): usage metrics slot, installs / weekly actives, and the
+    one public lesson, when you want to state them. */}
+
+Saare surfaces live aur reviewed hain: apps App Store aur Google Play par, extension Chrome Web
+Store mein, aur site production mein. Ek insaan ek akele idea ko teen alag review
+process aur teen alag runtimes se hokar le gaya, aur ecosystem ab bhi ek product ki
+tarah behave karta hai, kyunki har surface ek hi reedh share karta hai.

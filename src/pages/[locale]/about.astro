@@ -1,0 +1,14 @@
+---
+import AboutPage from '../../components/pages/AboutPage.astro';
+import { DEFAULT_LOCALE, LOCALES, type Locale } from '../../i18n';
+
+export function getStaticPaths() {
+  return LOCALES.filter((l) => l.code !== DEFAULT_LOCALE).map((l) => ({
+    params: { locale: l.code },
+  }));
+}
+
+const locale = Astro.params.locale as Locale;
+---
+
+<AboutPage locale={locale} />

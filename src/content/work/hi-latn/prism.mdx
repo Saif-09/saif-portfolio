@@ -1,0 +1,33 @@
+---
+translationStatus: reviewed
+title: 'Prism: extension aur site'
+description: 'Ek dusra solo-shipped ecosystem: browser extension aur website, design aur built end to end.'
+project: prism
+role: built-0-1
+stack:
+  - React
+  - Node.js
+  - Browser extension APIs
+order: 4
+---
+
+## Problem
+
+Ek solo ecosystem ship kar sakte hain, toh use luck bhi keh sakte hain; lekin dusra solo ecosystem ship karna ek process hai. Prism, ek [site](https://prism.ziyarex.com/) aur 
+[browser extension](https://chromewebstore.google.com/detail/hehmcipehcghgaiohfmplfckcjckiiai),
+ko banaya gaya tha taaki repeatable part ko prove kiya ja sake: idea → product → shipped, bina team ke aur bina ek saal ke.
+
+## Decisions
+
+**Playbook ko reuse karo, code nahi.** Ueue se sikhe hue lessons ko carry over kiya: surface-per-strength, ruthless scope, states as features. Lekin Prism ne apne technical calls ko alag se liya jab product ne alag calls maange.
+
+**Extension-first.** Prism ka value browser mein hai, toh extension hi product hai aur site uska front door hai, doosra nahi. Is ordering ne sab kuch decide kiya: onboarding wahan hota hai jahan value hai, aur site click bechti hai, scroll nahi.
+
+**Ship, phir sharpen.** Pehla public version jaldi release kiya, phir real usage ke against iterate kiya, imagined users ke against nahi.
+
+## Outcome
+
+{/* TODO(saif): usage metrics slot, installs / weekly actives, and the
+    iteration story, when you want to share them. */}
+
+Prism live hai end to end: extension Chrome Web Store mein, site production mein. Dusra ecosystem pehla se jaldi ship hua, playbook sahi tha, jo hypothesis tha. Jo Ueue ne possible prove kiya, Prism ne repeatable prove kiya.

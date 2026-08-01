@@ -1,0 +1,60 @@
+---
+title: 'Zenzop: delivery apps built for the last mile'
+description: "Building Zenzop's customer and rider apps 0 to 1 in React Native: live tracking, iOS Live Activities, and an ETA engine that got 28% more accurate."
+project: zenzop
+role: built-0-1
+stack:
+  - React Native
+  - Swift
+  - Google Maps
+  - CodePush
+order: 2.3
+---
+
+## Problem
+
+Zenzop is an on-demand delivery app: food, groceries, medicines, and daily
+essentials brought to your door. Delivery lives or dies on two things the customer
+feels directly: do I know where my order is, and is the ETA honest. My job was to
+build the apps that carry both, from scratch, for iOS and Android.
+
+## Decisions
+
+**Two apps, one job.** I built both sides end to end in React Native: the Shop app
+the customer orders from, and the Rider app the delivery partner runs. Each shipped
+to iOS and Android, so a small team could move on all four surfaces at once. Google
+Maps handles real-time geolocation and route optimization, the spine both apps
+share.
+
+**Live tracking that survives a locked phone.** A rider's phone spends the whole
+trip in a pocket. I built background live tracking so the rider's position keeps
+flowing even when the app is not in the foreground, and on iOS I went native with
+Swift to drive Live Activities: order status and rider progress on the Dynamic
+Island and lock screen, so the customer sees where their food is without opening
+anything. That is the difference between an app people check and an app people
+trust.
+
+**An ETA engine, not an ETA guess.** A delivery ETA is a promise. I built an engine
+that computes it from distance matrices, live traffic, the rider's live position,
+and historical averages for the route, rather than a naive straight-line estimate.
+It improved ETA accuracy by 28%, the kind of number a customer feels on every
+single order.
+
+**Fast to load, fast to fix.** I refactored the apps for 30% faster load times and
+wired up CodePush, so over-the-air updates ship straight to users without a full
+store release. Fixes and tweaks land the same day, not the next review cycle.
+
+**Docs so the API is not a bottleneck.** I wrote comprehensive Swagger API
+documentation so the client and backend teams could build, test, and integrate
+against a single source of truth instead of tribal knowledge.
+
+## Outcome
+
+{/* TODO(saif): metrics slot, installs / on-time delivery rate / order volume.
+    Qualitative until real numbers land. */}
+
+Both apps shipped on iOS and Android: a customer app and a rider app built from
+nothing, with live tracking that holds up in a pocket, iOS Live Activities on the
+Dynamic Island, and an ETA engine 28% more accurate than the baseline. The last
+mile is the part of delivery a customer actually experiences, and these apps were
+built to make it feel handled.

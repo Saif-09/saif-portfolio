@@ -1,0 +1,13 @@
+---
+import CaseStudyPage from '../../components/pages/CaseStudyPage.astro';
+import { getWorkEntry, getWorkSlugs } from '../../lib/work';
+
+export async function getStaticPaths() {
+  return (await getWorkSlugs()).map((slug) => ({ params: { slug } }));
+}
+
+const entry = await getWorkEntry('en', Astro.params.slug);
+if (!entry) throw new Error(`No case study for slug: ${Astro.params.slug}`);
+---
+
+<CaseStudyPage locale="en" entry={entry} />

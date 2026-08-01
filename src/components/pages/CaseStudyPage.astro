@@ -1,0 +1,326 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import BrowserFrame from '../media/BrowserFrame.astro';
+import PhoneFrame from '../media/PhoneFrame.astro';
+import StoreBadges from '../media/StoreBadges.astro';
+import { useTranslations, pathForLocale, type Locale } from '../../i18n';
+import { projects } from '../../data/projects';
+import { getWorkSlugs, type WorkEntry } from '../../lib/work';
+
+interface Props {
+  locale: Locale;
+  entry: WorkEntry;
+}
+
+const { locale, entry } = Astro.props;
+const t = useTranslations(locale);
+const { Content } = await render(entry);
+
+const slug = entry.id.split('/').pop()!;
+const project = projects.find((p) => p.id === entry.data.project);
+const roleLabel =
+  entry.data.role === 'built-0-1' ? t.work.built01 : t.work.contributed;
+
+/* Next-project navigation, ordered by the collection's order field. */
+const slugs = await getWorkSlugs();
+const nextSlug = slugs[(slugs.indexOf(slug) + 1) % slugs.length];
+const nextProject = projects.find((p) => p.id === nextSlug);
+
+const visual = project?.visual;
+const domain = project?.links.find((l) => l.label === 'Web')?.href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '');
+
+const creativeWorkJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: project?.name ?? entry.data.title,
+  headline: entry.data.title,
+  description: entry.data.description,
+  url: new URL(Astro.url.pathname, Astro.site).toString(),
+  author: { '@type': 'Person', name: 'Mohd Saif' },
+  keywords: entry.data.stack.join(', '),
+  ...(project?.links.length
+    ? { sameAs: project.links.map((l) => l.href) }
+    : {}),
+};
+---
+
+<Base
+  locale={locale}
+  title={`${entry.data.title} · Mohd Saif`}
+  description={entry.data.description}
+  ogImage={`/og/work-${slug}.png`}
+  jsonLd={[creativeWorkJsonLd]}
+>
+  <article class="case container">
+    <header class="case-header">
+      <p class="case-eyebrow">
+        <a href={pathForLocale(locale, '/work/')}>{t.work.heading}</a>
+      </p>
+      <h1 class="case-title">{entry.data.title}</h1>
+      <dl class="case-meta">
+        <div class="case-meta-item">
+          <dt>{t.work.role}</dt>
+          <dd>{roleLabel}</dd>
+        </div>
+        <div class="case-meta-item">
+          <dt>{t.work.stack}</dt>
+          <dd>{entry.data.stack.join(' · ')}</dd>
+        </div>
+        {
+          project?.links.length ? (
+            <div class="case-meta-item">
+              <dt>{t.work.links}</dt>
+              <dd class="case-links">
+                {project.links.map((link) => (
+                  <a class="chip" href={link.href} rel="noopener">
+                    {link.label}
+                    <span aria-hidden="true" class="chip-arrow">↗</span>
+                  </a>
+                ))}
+              </dd>
+            </div>
+          ) : null
+        }
+      </dl>
+    </header>
+
+    <div class="case-body">
+      {/* Sticky media rail: the product stays on screen while the story scrolls. */}
+      <aside class="case-media" aria-hidden={visual?.type === 'tile' ? 'true' : undefined}>
+        <div class="case-media-sticky">
+          {
+            visual?.type === 'shot' ? (
+              <>
+                <BrowserFrame
+                  src={visual.src}
+                  thumb={visual.thumb}
+                  alt={visual.alt}
+                  domain={domain}
+                />
+                <div class="case-media-secondary" data-parallax>
+                  <BrowserFrame src={visual.src.replace('.jpg', '-2.jpg')} alt="" />
+                </div>
+              </>
+            ) : visual?.type === 'phone' ? (
+              <div class="case-media-phone">
+                <PhoneFrame screen={visual.screen} name={project?.name ?? ''} />
+                {visual.screen2 ? (
+                  <div class="case-media-phone-secondary" data-parallax>
+                    <PhoneFrame screen={visual.screen2} name={project?.name ?? ''} />
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div class="case-media-tile">{project?.name.slice(0, 1)}</div>
+            )
+          }
+          {project && <StoreBadges links={project.links} />}
+        </div>
+      </aside>
+
+      <div class="prose case-prose">
+        <Content />
+      </div>
+    </div>
+
+    <nav class="case-next" aria-label={t.work.nextProject}>
+      <a href={pathForLocale(locale, `/work/${nextSlug}/`)}>
+        <span class="case-next-label">{t.work.nextProject}</span>
+        <span class="case-next-name">
+          {nextProject?.name ?? nextSlug}
+          <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .case {
+    padding-block: var(--space-12) var(--space-16);
+  }
+
+  .case-header {
+    margin-block-end: var(--space-8);
+  }
+
+  .case-eyebrow {
+    font-size: var(--text-small);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .case-eyebrow:lang(ar),
+  .case-eyebrow:lang(ur) {
+    letter-spacing: 0;
+  }
+
+  .case-eyebrow a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .case-eyebrow a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .case-title {
+    font-size: var(--text-h1);
+    margin-block-start: var(--space-3);
+    max-inline-size: 24ch;
+    text-wrap: balance;
+  }
+
+  .case-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-12);
+    margin-block-start: var(--space-6);
+    border-block: 1px solid var(--line);
+    padding-block: var(--space-4);
+  }
+
+  .case-meta-item dt {
+    color: var(--muted);
+    font-size: var(--text-small);
+    margin-block-end: var(--space-1);
+  }
+
+  .case-meta-item dd {
+    font-size: var(--text-small);
+  }
+
+  .case-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .case-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  /* Mobile: words first, media after - keeps the (text) title as the
+     LCP element instead of a viewport-filling image. */
+  @media (max-width: 63.9rem) {
+    .case-media {
+      order: 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .case-body {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-16);
+      align-items: start;
+    }
+  }
+
+  .case-media-sticky {
+    position: sticky;
+    inset-block-start: calc(72px + var(--space-6));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .case-media-secondary {
+    inline-size: 82%;
+    margin-inline-start: auto;
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .case-media-secondary {
+      display: block;
+    }
+  }
+
+  .case-media-phone {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: var(--space-6);
+    padding-block: var(--space-4);
+  }
+
+  .case-media-phone-secondary {
+    display: none;
+    inline-size: min(100%, 12rem);
+    margin-block-start: var(--space-12);
+  }
+
+  @media (min-width: 64rem) {
+    .case-media-phone-secondary {
+      display: block;
+    }
+  }
+
+  .case-media-tile {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background-color: var(--surface);
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 550;
+    color: var(--muted);
+  }
+
+  .case-prose :global(h2) {
+    border-block-start: 1px solid var(--line);
+    padding-block-start: var(--space-6);
+  }
+
+  .case-next {
+    margin-block-start: var(--space-16);
+    border-block-start: 1px solid var(--line);
+    padding-block-start: var(--space-8);
+  }
+
+  .case-next a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-decoration: none;
+  }
+
+  .case-next-label {
+    color: var(--muted);
+    font-size: var(--text-small);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .case-next-label:lang(ar),
+  .case-next-label:lang(ur) {
+    letter-spacing: 0;
+  }
+
+  .case-next-name {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 500;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .case-next a:hover .case-next-name {
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    text-decoration-color: var(--muted);
+  }
+
+  [dir='rtl'] .case-next-name span {
+    transform: scaleX(-1);
+  }
+</style>
