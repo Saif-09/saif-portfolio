@@ -1,0 +1,108 @@
+---
+title: 'Slate: a to-do list that lives on your wallpaper'
+description: "A macOS menu-bar todo app that renders your list straight onto the desktop, shipped solo to the Mac App Store with a paid unlock, a headless render harness, and a first-run bug that only existed for real installs."
+project: slate
+role: built-0-1
+stack:
+  - Swift
+  - SwiftUI
+  - macOS
+  - EventKit
+  - StoreKit
+order: 3.5
+---
+
+## Problem
+
+Every todo app has the same quiet failure: you have to go and look at it. The
+list lives behind a window, a window has to be opened, and so the list is only
+ever as present as your willingness to check it. The one surface a Mac shows you
+whether you asked or not is the wallpaper. Close a window, quit an app, come
+back from lunch, and it is already there.
+
+So Slate is not a todo app with a wallpaper export bolted on. The wallpaper is
+the primary display: a SwiftUI view goes through ImageRenderer to a PNG, then
+NSWorkspace.setDesktopImageURL puts it behind everything, once per display. The
+app window and the menu-bar popover exist only to edit the thing you are already
+looking at.
+
+## Decisions
+
+**Rendering to a picture is not rendering to a screen.** ImageRenderer will not
+rasterize a ScrollView, and a SwiftUI Form is one, so the entire settings window
+is invisible to the renderer by construction. That is not a bug to work around,
+it is a boundary that decides how the app can be tested: anything inside a Form
+can only be verified by opening the real window and capturing it. Knowing that
+early is why the test harness looks the way it does instead of being a pile of
+screenshot diffs that quietly never covered Settings.
+
+**Own the store, mirror Reminders, and refuse to approximate.** Slate keeps its
+own JSON store and mirrors Apple Reminders as a second read source. Mirrored
+reminders are never written into that store; they are merged at read time from
+the last fetch. No local copy means no drift, no tombstones, and no conflict
+resolution to get wrong, and a reminder deleted on an iPhone simply stops
+appearing. Slate writes back exactly two properties, completion and due date.
+EventKit exposes neither subtasks nor complex repeats, so those are dropped
+rather than approximated. Every second Tuesday, rendered as roughly weekly,
+would have demoed beautifully and been worse than absent: a schedule you cannot
+trust is one you have to check somewhere else, which is the whole problem the
+app exists to solve.
+
+**A harness, because no eye scales to seven by nine by twenty-one.** Seven
+wallpaper templates, nine placements, twenty-one palettes, fourteen typefaces
+and twelve background patterns compose into more states than anyone can look at.
+So the app ships its own dev CLI and I built it before I needed it. One flag
+runs 1034 in-process assertions against a throwaway store, never the real one.
+One stress-renders every template against dark, light, overflow and empty. One
+writes a wallpaper per pattern and per typeface. One composes the seven App
+Store product frames at 2560 by 1600, so the store page is a build artifact
+rather than an afternoon in a screenshot tool. One draws the purchase screen
+with stand-in plans, because StoreKit returns nothing headless and would
+otherwise render a priceless, disabled button that misrepresents the normal
+state. One prints every entitlement StoreKit will admit to and which environment
+answered, for the day the app insists it is unlocked and you need to know why.
+That harness is the reason one person can change a renderer on a Tuesday and
+still ship on Wednesday.
+
+**The bug that only exists for other people.** The very first
+setDesktopImageURL into a freshly created sandbox container silently no-ops. On
+my machine, where the container had existed for weeks, this was invisible. For
+anyone installing from the App Store it would have been the entire first
+impression: I opened Slate and nothing happened. The fix is a coordinator that
+re-checks 2.5 seconds after applying and re-applies once, verified against a
+wiped container. The habit I kept is more useful than the fix: every ship now
+gets one deliberate pass in a state I cannot reach by developing normally.
+
+**Two rejections, both facts I could not have guessed.** First, the sandbox
+entitlement com.apple.security.personal-information.reminders does not exist on
+macOS. The Mac sandbox has addressbook, calendars, location and photos-library,
+and EventKit reminders live under calendars, which I confirmed by running
+sandboxed against 22 real reminders across both lists. Second, the Mac App Store
+requires LSApplicationCategoryType in Info.plist and mentions it only after you
+upload. Both were fixed the same day, and both are now checked by a preflight
+script that runs before every archive, because the second time you learn a fact
+like that is a day you paid for twice.
+
+**Free to open, paid to keep, and the submission order matters.** Slate installs
+free and a one-time purchase unlocks the rest. Apple reviews an app's first
+in-app purchase only alongside an app version, in the same submission, and
+submitting the version on its own is a single click that strands the purchase in
+a draft reading "unable to submit for review". So the release checklist ends with
+opening the submission and confirming it lists both items before anything is
+sent. Pricing and paywall copy are product decisions; the submission order is
+just a trap, and traps belong in a script.
+
+## Outcome
+
+Slate is [live on the Mac App Store](https://apps.apple.com/app/id6796836834),
+released 4 August 2026 and at version 1.3 within a fortnight, with a
+[landing page](https://slate.ziyarex.com/), a privacy page, and a support page I
+also wrote. Everything in it is mine: the idea, the renderer, the design system,
+the seven templates, the palettes, the store listing, the in-app purchase, the
+hardened runtime, the notarization, and the updates since.
+
+The part I would keep from this build is the harness. A solo app has no reviewer
+and no QA, so the only thing standing between a change and a broken wallpaper on
+someone's desktop is whether verification is cheap enough that I actually run
+it. Making it a single command was not thoroughness. It was the only way to keep
+shipping at all.

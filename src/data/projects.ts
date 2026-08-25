@@ -4,7 +4,7 @@ export type Track = 'professional' | 'personal';
 export type Role = 'built-0-1' | 'contributed';
 
 export interface ProjectLink {
-  label: 'iOS' | 'Android' | 'Web' | 'Extension' | 'App';
+  label: 'iOS' | 'Mac' | 'Android' | 'Web' | 'Extension' | 'App';
   href: string;
 }
 
@@ -140,6 +140,24 @@ export const projects: Project[] = [
 
   // --- Personal / Labs ---
   {
+    id: 'ziyarex',
+    name: 'Ziyarex',
+    track: 'personal',
+    role: 'built-0-1',
+    featured: true,
+    homeFeatured: true,
+    summary:
+      'The studio: 11 apps, a hand-picked shelf with cons required, 12 free tools, and one manifest behind every surface.',
+    scope: 'Store + tools + journal + public API + billing',
+    links: [{ label: 'Web', href: 'https://ziyarex.com' }],
+    visual: {
+      type: 'shot',
+      src: '/shots/ziyarex.jpg',
+      thumb: '/shots/ziyarex-thumb.jpg',
+      alt: 'Ziyarex homepage: "Great software, found for you."',
+    },
+  },
+  {
     id: 'ueue',
     name: 'Ueue',
     track: 'personal',
@@ -171,6 +189,67 @@ export const projects: Project[] = [
       alt: 'Ueue landing page: "Save it now. Actually get to it later."',
     },
     favicon: '/favicons/ueue.png',
+  },
+  {
+    id: 'slate',
+    name: 'Slate',
+    track: 'personal',
+    role: 'built-0-1',
+    featured: true,
+    homeFeatured: true,
+    summary:
+      'A macOS todo app whose list is your wallpaper. On the Mac App Store, with a paid unlock.',
+    scope: 'macOS app + in-app purchase + site',
+    links: [
+      { label: 'Mac', href: 'https://apps.apple.com/app/id6796836834' },
+      { label: 'Web', href: 'https://slate.ziyarex.com/' },
+    ],
+    visual: {
+      type: 'shot',
+      src: '/shots/slate.jpg',
+      thumb: '/shots/slate-thumb.jpg',
+      alt: 'Slate landing page: "Your to-do list is the wallpaper."',
+    },
+    favicon: '/favicons/slate.png',
+  },
+  {
+    id: 'oreo',
+    name: 'OreoNotch',
+    track: 'personal',
+    role: 'built-0-1',
+    featured: true,
+    summary:
+      "Live activities and a drawer of widgets in your MacBook's notch. Paid, notarised, self-updating.",
+    scope: 'macOS app + licensing + site',
+    links: [{ label: 'Web', href: 'https://oreo.ziyarex.com/' }],
+    visual: {
+      type: 'shot',
+      src: '/shots/oreo.jpg',
+      thumb: '/shots/oreo-thumb.jpg',
+      alt: 'OreoNotch landing page: "The notch, put to work."',
+    },
+    favicon: '/favicons/oreo.png',
+  },
+  {
+    id: 'vouch',
+    name: 'Vouch',
+    track: 'personal',
+    role: 'built-0-1',
+    featured: true,
+    homeFeatured: true,
+    summary:
+      'A dev tool that tests whether you can still defend the code your agents wrote. Published on npm.',
+    scope: 'CLI + daemon + dashboard + Claude Code plugin',
+    links: [
+      { label: 'Web', href: 'https://github.com/Saif-09/codevouch' },
+    ],
+    visual: {
+      type: 'shot',
+      src: '/shots/vouch.jpg',
+      thumb: '/shots/vouch-thumb.jpg',
+      alt: 'Vouch on GitHub: "You shipped it. Can you explain it?"',
+    },
+    favicon: '/favicons/codevouch.png',
   },
   {
     id: 'prism',
@@ -212,6 +291,7 @@ export const projects: Project[] = [
       thumb: '/shots/insomniac-thumb.jpg',
       alt: 'Insomniac: keep your Mac awake with the lid closed, safely',
     },
+    favicon: '/favicons/insomniac.png',
   },
   {
     id: 'cat-mode',
@@ -235,6 +315,24 @@ export const projects: Project[] = [
       thumb: '/shots/cat-mode-thumb.jpg',
       alt: 'Cat Mode: let your cat pounce at the screen without breaking playback',
     },
+  },
+  {
+    id: 'clickk',
+    name: 'Clickk',
+    track: 'personal',
+    role: 'built-0-1',
+    featured: false,
+    summary:
+      'Mechanical keyboard sound for every keystroke, from real switch recordings. Nothing you type is read.',
+    scope: 'macOS app + site',
+    links: [{ label: 'Web', href: 'https://clickk.ziyarex.com/' }],
+    visual: {
+      type: 'shot',
+      src: '/shots/clickk.jpg',
+      thumb: '/shots/clickk-thumb.jpg',
+      alt: 'Clickk landing page: "Give your keyboard a voice."',
+    },
+    favicon: '/favicons/clickk.png',
   },
   {
     id: 'salute-button',

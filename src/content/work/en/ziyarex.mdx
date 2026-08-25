@@ -1,0 +1,101 @@
+---
+title: 'Ziyarex: eleven apps, twelve tools, one file'
+description: "The studio site above nine product subdomains: a curated app shelf with cons required, twelve free browser tools, a 24-piece journal, and a single product manifest that drives every surface including a public API the shipped Mac apps consume."
+project: ziyarex
+role: built-0-1
+stack:
+  - Next.js
+  - TypeScript
+  - Vercel
+  - Postgres
+  - Stripe
+order: 2.9
+---
+
+## Problem
+
+I had nine product subdomains and no front door. Slate, Oreo, Clickk, Ueue, Prism,
+Zazz, Cat Mode and the rest each had a site that knew nothing about the others,
+so every launch started my audience from zero again. A person who liked one of my
+apps had no way to find out the same person made the next one.
+
+The obvious answer is a studio page listing my things, which solves my problem
+and nobody else's. Nobody wakes up wanting to browse one developer's catalogue.
+What people actually want is help deciding what to install, and the reason they
+do not trust the places that offer it is that those places are paid to
+recommend. So Ziyarex became a shelf: my apps, a hand-picked shelf of other
+people's apps with the downsides written in, and the free tools I had already
+built for myself while shipping.
+
+## Decisions
+
+**One file is the product.** Every surface is a view over one manifest. The store
+grid, the homepage, each product's detail page and OG image, the sitemap, a
+public API, an in-app "more from Ziyarex" list that the Mac apps fetch at
+runtime, and a cross-promotion strip embedded on all nine subdomains all read the
+same array. Shipping an app is editing one file. The alternative, a page per
+product, means every new app is nine edits and a stale one somewhere, which is
+exactly how a one-person studio ends up with a store that lies.
+
+**That API is a contract, and it is written down as one.** The strip embed and
+shipped copies of the Mac apps consume the products endpoint, and shipped copies
+do not update because I renamed a field. So the rule is in a comment at the top
+of the manifest: additive changes only, never rename or repurpose an existing
+field. Deciding that before the first consumer existed cost nothing. Deciding it
+afterwards costs a forced update.
+
+**The strip needed two implementations, because my sites are two kinds.** The
+newer ones are Next.js. Slate, Oreo and Cat Mode are hand-written static HTML,
+and no React component reaches those. Rewriting three working marketing sites to
+unify the stack would have been days of work to serve one strip, so the strip
+ships twice from one data source instead: a component for the React sites, a
+small script for the static ones. The duplication is deliberate and cheap; the
+rewrite would have been neither.
+
+**Cons required.** The Discover shelf carries 24 apps I did not make, and the
+curation rules are published on the page rather than implied: hand-picked, no paid
+placements, no affiliate links, cons required. Every listing has to name what is
+wrong with the app. That single rule is the entire reason the shelf is worth
+reading, and it is also the reason it can never become a revenue line, which is a
+trade I made on purpose.
+
+**Use cases are a separate artifact from features.** A store page explains a
+product in its own language and serves the person who already knows they want it.
+It fails the person who has read the tagline twice and still cannot picture the
+day the app improves. So each app also gets a use-case page with its own writing
+rules, enforced in a comment because I am the only reviewer: a scenario has to be
+a real moment and has to start with "you", no product nouns the reader has not
+met yet, tips have to be things a new user would otherwise get wrong, and where
+the software cannot do the obvious thing, say so here rather than letting someone
+find out afterwards.
+
+**Tools are the offcuts, kept.** The twelve are things I built while shipping my
+own apps and did not throw away: App Store screenshot resizing, icon generation
+for every platform slot, QR codes, a smart store link, an ASO audit, and a set of
+PDF operations. No watermark, no export cap, no trial that expires, and most run
+entirely in the browser so the file never leaves the machine. They exist because
+the free tools I needed all wanted an account and a signature on the way out.
+
+**Outside makers keep their name.** The manifest has a maker field, and when it is
+set the credit follows the app everywhere: a byline in the store hero, a made-by
+block with their own links, and Person authorship in the structured data instead
+of Ziyarex. LinkPeek on the shelf is Kedar Deshmukh's, and the site says so in
+every place a person or a crawler might look. A shelf that quietly absorbs other
+people's work into the host's brand is the thing I was building against.
+
+## Outcome
+
+[ziyarex.com](https://ziyarex.com) is live: 11 apps in
+[the store](https://ziyarex.com/store), 24 hand-picked apps on the Discover shelf,
+[12 free tools](https://ziyarex.com/tools), a
+[24-piece journal](https://ziyarex.com/journal), per-app use cases, a changelog
+that aggregates every product, comparison and ASO pages, accounts, licence keys
+and checkout. One of the apps on it was made by somebody else, with their name on
+it.
+
+What I would carry into anything else is the shape rather than the site: put the
+truth in one file, write the contract down before the second consumer exists, and
+let the rules that make a thing trustworthy be visible on the page. The cons
+requirement makes the shelf less profitable and the only reason anyone would
+believe it. That is usually the trade worth making, and it is always easier to
+make at the start.

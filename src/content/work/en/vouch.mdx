@@ -1,0 +1,123 @@
+---
+title: 'Vouch: a tool that grades me, not the model'
+description: "A CLI, daemon, dashboard and Claude Code plugin that tests whether I can still defend the code my agents wrote, published on npm as codevouch, and the unused-dependency check that fell out of building it."
+project: vouch
+role: built-0-1
+stack:
+  - TypeScript
+  - Node
+  - ts-morph
+  - Next.js
+  - Claude Code plugin
+order: 3.8
+---
+
+## Problem
+
+I ship faster with agents than I ever did without them, and somewhere in that
+speedup I started merging code I could not have written from scratch. It works,
+the tests pass, so you move on. Three months later it breaks at 2am and you are
+reading a file with your own name on the commit like a stranger wrote it. You do
+not know why that package is there, or what happens when that call fails.
+
+The gap between what you shipped and what you can defend is invisible until it
+costs you, and it costs you at the worst possible moment: an outage, a review, an
+interview, or someone asking why you did it this way. Every tool in the adjacent
+space makes the gap worse. DeepWiki, Greptile, Unblocked and friends explain your
+codebase to you, which feels exactly like understanding and is not, because
+reading a good explanation is the cheapest possible way to end up confident and
+wrong.
+
+So I built the opposite. Vouch makes me produce the answer first, then shows me
+the difference.
+
+## Decisions
+
+**Test the human, not the output.** Every rep opens by asking me to rate my
+confidence from 1 to 7, before I see anything, and closes by showing the delta.
+The flagship number is not a score, it is the Gap: how far my confidence ran
+ahead of what I could actually produce, per area of the repo. This comes straight
+out of the illusion of explanatory depth, where merely attempting an explanation
+collapses stated confidence. Capturing the rating before the attempt is not a
+UX nicety, it is the entire mechanism. A score you can grind is a vanity metric.
+A number that says you were two rungs overconfident about auth is very hard to
+argue with.
+
+**It must never block, and it must never be a code reviewer.** No pre-commit
+gate, no failing build, no permission step. The moment a learning tool can stop
+you shipping, you disable it and the honest measurement dies with it. That
+constraint is also the product's whole position: it is not a linter, it does not
+review the code, and it does not explain it. It asks.
+
+**Zones gate everything.** Nobody wants to stay sharp at everything, and an
+over-inclusive list of things to be quizzed on is the fastest possible route to
+uninstalling. So setup is one keypress per area of the code: keep sharp, or
+outsourced. CSS scaffolding, outsourced, guilt free. Auth and payments, keep
+sharp. The tool only tests what you said you wanted to own.
+
+**The score has to stay winnable.** My first version put artifact nodes in the
+denominator with no rep type that could ever promote them, which capped a real
+repo near eleven percent no matter how much work you did. A learning tool with an
+unreachable ceiling teaches you that effort is pointless. Now a passing rep
+promotes the artifacts its decision was about, and concepts are excluded from the
+score as study material rather than units of ownership. The rule I kept: any new
+node kind ships with a rep that can promote it, or it does not enter the score.
+
+**Grounding in real call sites paid for itself twice.** Questions are only worth
+answering if they point at your actual code, so every dependency is resolved to
+the file and line where it is used, with ts-morph doing the import analysis. That
+requirement produced a second command I had not planned. If you know every real
+call site, you know which packages have none. On a production Next.js app, vouch
+unused found 16 dependencies that nothing imports, 10.7 MB installed, and I
+checked all 16 by hand: no false positives. Packages that legitimately have no
+import site, type definitions, eslint plugins, postcss, storybook, are listed
+separately and never inflate the headline number, and the output calls zero
+imports a question to answer rather than an instruction to delete.
+
+**Honest numbers, including the ones that make the tool look smaller.**
+Vulnerability severities are quoted from the advisory database and never invented
+locally, and dependencies are checked at the version in your lockfile rather than
+the latest published one, because a project pinned to a vulnerable release would
+otherwise be reported clean. The prompt reviewer, which reads back the prompts I
+actually sent and names the ones that should not have been needed, reports its
+token figure as an estimate and says so in the output: hooks do not expose usage,
+so it counts four characters per token and charges each avoidable prompt the
+whole conversation up to that point. The real measurement is the count of
+avoidable round trips. Dressing an estimate as a measurement would have made a
+better screenshot and a tool I could not trust.
+
+**Cheap where cheapness is invisible.** Re-tests are recognition items whose
+distractors are drawn from the repo itself, so revisiting old ground costs zero
+AI calls. Extraction runs on Haiku, which I moved to after measuring 74 cents per
+call on a frontier model against 5 cents on Haiku for output I could not tell
+apart. Decay is evaluated lazily when something is read rather than on a timer,
+so nothing runs in the background to keep a number fresh that nobody is looking
+at.
+
+**Your code stays yours.** No account, no server, no telemetry. Redacted
+excerpts go to Anthropic through your own CLI, package names go to public
+registries for licence and advisory data, and the outbound host list is enforced
+in code rather than promised in a README. Environment files, keys and
+certificates are never sent. One command purges everything and leaves nothing
+behind.
+
+## Outcome
+
+Vouch is [published on npm as codevouch](https://www.npmjs.com/package/codevouch)
+and [open on GitHub](https://github.com/Saif-09/codevouch): a CLI, a daemon, a
+localhost dashboard and a Claude Code plugin that predicts what it thinks you
+have not internalised, in the session, before the answer lands. Four waves, 83
+tests, Node 24, nothing compiles at install.
+
+The reps found real bugs, which was not the goal but is the best evidence the
+premise holds. Asked to reconstruct a wishlist feature I had shipped days
+earlier, the brief written when the code landed named three things I had not
+noticed: a server-side render that throws on localStorage, rapid adds with no
+client-side dedup, and a storage quota failure that leaves the cache diverged
+from disk. Three real bugs, surfaced by being asked to explain my own code.
+
+The thing I would defend hardest is the refusal to explain anything to the user
+before asking them first. It makes the tool worse at first impressions and it is
+the only reason it works. Agents have made producing code nearly free, which
+means the scarce thing is no longer output. It is whether anybody on the surface
+still has judgment about it.

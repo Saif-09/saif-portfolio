@@ -100,7 +100,13 @@ import { projects } from './projects';
  * they are real integers by construction, never placeholders.
  */
 const appsShipped = projects.filter((p) =>
-  p.links.some((l) => l.label === 'iOS' || l.label === 'Android' || l.label === 'App'),
+  p.links.some(
+    (l) =>
+      l.label === 'iOS' ||
+      l.label === 'Mac' ||
+      l.label === 'Android' ||
+      l.label === 'App',
+  ),
 ).length;
 
 const liveProducts = projects.filter((p) =>

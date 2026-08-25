@@ -1,0 +1,98 @@
+---
+title: 'OreoNotch: the notch is a UI surface'
+description: "A macOS notch utility shipping at 0.2.0: live activities and a drawer of widgets, built on a pure state machine, with env-var hooks so the whole surface can be screenshotted from a script, and the transparent-panel bug that made System Settings unclickable."
+project: oreo
+role: built-0-1
+stack:
+  - Swift 6
+  - SwiftUI
+  - AppKit
+  - macOS
+  - Sparkle
+order: 3.6
+---
+
+## Problem
+
+Every MacBook made since 2021 has a notch, and the operating system treats it as
+an obstacle to route the menu bar around. The two apps that already saw it as a
+surface split the idea in half: one does live activities well, the other does a
+drawer of widgets well, and running both is two menu-bar items and two settings
+windows to hold the same piece of screen.
+
+OreoNotch takes the whole surface. Live activities appear as they happen, now
+playing, AirPods battery, Do Not Disturb, a screenshot you can drag straight out,
+and one click opens a Desk with media, to-dos, what is next in the calendar, a
+timer and volume. The hard part is not the feature list. It is that the notch is
+a region of the screen with no window of its own, and everything you draw there
+is a transparent panel sitting on top of other people's apps.
+
+## Decisions
+
+**The state machine has no AppKit in it.** The panel has more states than it looks
+like: closed, hinting, an activity showing, the drawer open on a tab, and every
+gesture and timer that moves between them. So that logic lives in a module that
+imports no AppKit and does no I/O, as a pure function, with the coordinator
+taking an injected clock. Both are then testable without a screen, which is the
+only reason 52 tests can cover the behaviour of a thing that exists to be
+hovered.
+
+**Visible is not clickable, and it cost me a day to learn.** Returning nil from a
+view's hit test stops the view handling a click, but the window has already taken
+the event from the WindowServer, so it does not fall through to whatever is
+underneath. A 900 by 420 transparent panel pinned to the top of the screen made
+System Settings completely unclickable, and it went unnoticed because screenshots
+showed the other app perfectly visible around the panel. The fix is to size the
+window to what it actually draws instead of gating the hit test. The habit is
+worth more than the fix: for anything that floats, the test is whether the app
+underneath still responds, never whether it still renders.
+
+**Hooks so the surface can be photographed without hands.** A notch app has
+nothing you can screenshot without hovering, dragging and waiting, which makes
+every marketing shot and every visual check a manual act. So the app takes
+environment variables at launch: jump straight to a settings pane, jump to an
+onboarding step, hold one activity open indefinitely, open the drawer, open the
+tray, fill the tray without a drag, skip Bluetooth entirely, write diagnostics to
+a temp file. A script drives the whole surface. Same reason as
+[Slate's render sweep](/work/slate/): the verification has to be cheaper than the
+change, or it stops happening.
+
+**Two toolchains over one set of sources.** SwiftPM owns the libraries and the
+tests, so the inner loop is a fast build with no Xcode in it. Xcode builds the
+shipping app, because the Focus filter is an App Intent and that metadata only
+exists in an Xcode build. Rather than pick one and lose either the fast loop or
+the shipping feature, the project generates its Xcode project from a manifest and
+keeps both. The cost is a rule to remember, which is written at the top of the
+readme: after adding a source file, regenerate, or Xcode cannot see it.
+
+**Always launch it the way a user would.** Running the executable directly
+bypasses LaunchServices, so the privacy system cannot resolve the bundle's
+Info.plist and the app aborts on the first privacy-sensitive call, even though
+every usage-description key is present. Nothing in the error says so. It is now
+the loudest warning in the readme, because the version of this bug that reaches a
+user is an app that dies on first launch for reasons no log explains.
+
+**Named so the name is cheap to change.** Oreo is my rabbit, which is a fine
+story for an about box and a poor defence against a biscuit company. So every
+identifier is name-neutral: the bundle id, the CloudKit container and the
+preference domain all say notch rather than the brand. A rename now costs strings
+and assets, not a signing identity and a migration. The icon went the same way. I
+rendered four rabbit directions side by side, decided they all read as a
+primitive-shapes animal, and shipped the notch silhouette instead. The rabbit
+lives in the about box.
+
+## Outcome
+
+[OreoNotch is live](https://oreo.ziyarex.com/) at 0.2.0, notarised, macOS 15 and
+Apple Silicon only, free to download with a $12.99 licence, updating itself
+through its own Sparkle feed. It is an accessory app with no Dock icon, and the
+menu it does have includes a debug submenu that fires synthetic activities,
+because the alternative is waiting for a real AirPods battery event to test the
+AirPods battery view.
+
+Apple Silicon only and macOS 15 only were both deliberate. The notch exists on
+exactly those machines, and supporting older systems would have meant conditional
+paths through the one part of the app that has to be pixel-exact. Cutting the
+audience to the machines the product is actually for is the cheapest performance
+and correctness decision available, and the one people are most reluctant to
+make.
