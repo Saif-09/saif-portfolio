@@ -16,6 +16,25 @@ export default defineConfig({
     // /api/ask streams model output; give it headroom beyond the default.
     maxDuration: 60,
   }),
+  /**
+   * The resume lives at a memorable path on this domain, never a Drive link:
+   * /resume (and /cv) redirect to the PDF in public/. The PDF is named
+   * Mohd_Saif_Resume.pdf so it lands in a recruiter's downloads folder under
+   * that name rather than as resume.pdf.
+   *
+   * These MUST live here, not in vercel.json: @astrojs/vercel writes its own
+   * .vercel/output/config.json via the Build Output API, which supersedes
+   * vercel.json redirects/rewrites. The adapter translates this map into real
+   * 302s at the routing layer (no meta-refresh HTML hop). 302 and not Astro's
+   * default 301: a permanent redirect is cached hard by browsers, so
+   * retargeting /resume later would never reach anyone who already clicked it.
+   * /resume/ (trailing slash) is covered by public/resume/index.html.
+   */
+  redirects: {
+    '/resume': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+    '/resume.pdf': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+    '/cv': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+  },
   integrations: [
     react(),
     mdx(),

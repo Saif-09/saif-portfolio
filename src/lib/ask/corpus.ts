@@ -83,7 +83,7 @@ function buildChunks(): Chunk[] {
       `Payments and monetization: ${skills.payments.join(', ')}.`,
       `Named performance and delivery techniques: ${skills.performance.join(', ')}.`,
       `Analytics, growth, and tooling: ${skills.analyticsAndTooling.join(', ')}.`,
-      `Contact: email ${profile.email}, GitHub ${profile.github}, LinkedIn ${profile.linkedin}, résumé ${profile.resume}. There is also a contact form on the homepage (#contact).`,
+      `Contact: email ${profile.email}, GitHub ${profile.github}, LinkedIn ${profile.linkedin}, résumé ${profile.resumeUrl}. There is also a contact form on the homepage (#contact).`,
       `Projects that were built 0→1 (from zero): ${projects.filter((p) => p.role === 'built-0-1').map((p) => p.name).join(', ')}.`,
       `Projects he contributed to: ${projects.filter((p) => p.role === 'contributed').map((p) => p.name).join(', ')}.`,
       `All projects:\n${projectLines}`,

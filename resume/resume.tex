@@ -1,0 +1,236 @@
+%-------------------------------------------------------------------------------
+% Mohd Saif - Full Stack Developer Resume  (single page)
+% Layout based on the "Jake's Resume" template (MIT License)
+% Compile with pdfLaTeX. Requires the `fontawesome5` package.
+%
+%------------------------------ ONE-PAGE KNOBS ---------------------------------
+% If content grows and spills to page 2, adjust in this order:
+%   1. \documentclass font size: 9pt -> 8pt (extarticle supports 8/9/10/11/12/14pt)
+%   2. \linespread below: 0.98 -> 0.96
+%   3. \textheight: add 0.2in (and subtract 0.2in from \topmargin)
+%   4. \small in \resumeItem -> \footnotesize
+% Reverse them if you have blank space left over.
+%-------------------------------------------------------------------------------
+
+\documentclass[letterpaper,9pt]{extarticle}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\linespread{0.98}
+
+%------------------------- MARGINS -------------------------
+\addtolength{\oddsidemargin}{-0.65in}
+\addtolength{\evensidemargin}{-0.65in}
+\addtolength{\textwidth}{1.3in}
+\addtolength{\topmargin}{-0.85in}
+\addtolength{\textheight}{1.7in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+\setlength{\footskip}{0pt}
+
+%------------------------- SECTION FORMATTING -------------------------
+\titleformat{\section}{
+  \vspace{-6pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-6pt}]
+
+\pdfgentounicode=1
+
+%------------------------- CUSTOM COMMANDS -------------------------
+% Inline clickable link: underlined so a reader can tell it is tappable
+\newcommand{\link}[2]{\href{#1}{\underline{#2}}}
+
+\newcommand{\resumeItem}[1]{
+  \item\small{#1}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{1pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-3pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-3pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{p{0.70\textwidth}@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-3pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{%
+  \begin{itemize}[leftmargin=0.15in, label={}, topsep=0pt, parsep=0pt, itemsep=0pt]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+
+\newcommand{\resumeItemListStart}{%
+  \begin{itemize}[leftmargin=0.15in, topsep=2pt, parsep=0pt, itemsep=1pt]}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-2pt}}
+
+%===============================================================================
+\begin{document}
+
+%------------------------- HEADING -------------------------
+\begin{center}
+    {\LARGE \scshape Mohd Saif} \\ \vspace{3pt}
+    \small
+    Delhi, India \, $|$ \,
+    \faPhone* \, +91 7318114969 \, $|$ \,
+    \faEnvelope \, \href{mailto:saifmd238@gmail.com}{saifmd238@gmail.com} \\ \vspace{2pt}
+    \small
+    \faGlobe \, \href{https://saifsiddiqui.in}{saifsiddiqui.in} \, $|$ \,
+    \faLinkedin \, \href{https://linkedin.com/in/mohd-saif-134076141/}{linkedin.com/in/mohd-saif-134076141} \, $|$ \,
+    \faGithub \, \href{https://github.com/Saif-09}{github.com/Saif-09}
+\end{center}
+\vspace{-6pt}
+
+%------------------------- SUMMARY -------------------------
+\section{Summary}
+\begin{itemize}[leftmargin=0.15in, label={}, topsep=2pt, parsep=0pt, itemsep=0pt]
+  \small{\item{
+    Full stack developer with 3.5+ years building and launching products end to end: React Native apps on iOS and Android, Next.js web, and the Node.js backends behind them. Shipped apps for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, owning architecture, native integrations, real-time features and payments. Also ships independent products: \link{https://www.npmjs.com/package/codevouch}{CodeVouch}, a dependency-audit CLI on npm; \link{https://ueue.ziyarex.com/}{Ueue}, a save-for-later app that resurfaces saves at the right moment; and \link{https://saifsiddiqui.in/work/slate/}{Slate}, a live task list rendered as your Mac wallpaper.
+  }}
+\end{itemize}
+\vspace{-13pt}
+
+%------------------------- TECHNICAL SKILLS -------------------------
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0.15in, label={}, topsep=2pt, parsep=0pt, itemsep=0pt]
+  \small{\item{
+    \textbf{Languages}: TypeScript, JavaScript, Go, Swift, Java, Python, SQL, HTML/CSS \\
+    \textbf{Frontend \& Mobile}: React Native, React, Next.js, Expo, Redux, Zustand, Tailwind CSS, Reanimated, FlashList, SwiftUI (Live Activities) \\
+    \textbf{Backend \& APIs}: Node.js, Express.js, GraphQL, REST, Server-Sent Events, WebSockets, Shopify GraphQL, Swagger \\
+    \textbf{Databases \& DevOps}: MongoDB, PostgreSQL, Firebase, Redis, MMKV, Docker, Git, CodePush / Stallion (OTA), CI/CD \\
+    \textbf{Payments}: Apple IAP (StoreKit), Razorpay, Stripe, PayPal, Apple Pay, Google Pay, GoKwik, Qonversion \\
+    \textbf{AI \& Analytics}: Claude API, Claude Code, LLM APIs, RAG, CleverTap, Firebase A/B testing, PostHog, WebEngage
+  }}
+\end{itemize}
+\vspace{-13pt}
+
+%------------------------- EXPERIENCE -------------------------
+\section{Experience}
+\resumeSubHeadingListStart
+
+  \resumeSubheading
+    {Shoppin'}{Dec 2025 -- Present}
+    {Product Engineer II}{Delhi, India}
+    \resumeItemListStart
+      \resumeItem{Core product engineer on an AI shopping and virtual try-on platform, working across the React Native apps for iOS and Android, the Next.js web store and the Node.js backend.}
+      \resumeItem{Shipped the AI custom-clothing experience end to end: users describe what they want in chat, refine it in an in-browser design studio and receive made-to-order clothes, covering requirement gathering, live design generation, automatic pricing and production handoff.}
+      \resumeItem{Contributed to the agent-based pattern-making engine that turns a garment image or spec sheet into a production-ready, fully graded ASTM sewing pattern at roughly 95\% accuracy in minutes, replacing days of manual CAD work.}
+      \resumeItem{Designed and built the Node.js APIs powering virtual try-on, look generation and content delivery, and stabilized the frontend architecture for reliability under high load.}
+      \resumeItem{Built composite device-ID auto-login across iOS and Android on Keychain and Block Store, threading \texttt{device\_id} through OTP verification, the Auth0 callback and guest login, wrapped in transactions for integrity with Redis locks that fail open during an outage so sign-in is never blocked.}
+      \resumeItem{Replaced polling with Server-Sent Events to stream generation progress and recommendations in real time, keeping the app responsive during long AI operations.}
+      \resumeItem{Rebuilt the video feed for Instagram-style infinite scroll and playback using lazy loading, compression, caching and adaptive streaming.}
+      \resumeItem{Integrated Apple In-App Subscriptions (StoreKit) with receipt validation and lifecycle management for premium tiers, alongside Razorpay, Stripe, Apple Pay and Google Pay checkout.}
+      \resumeItem{Built the internal order-management dashboard and a WhatsApp flow pushing every order status change to the customer; instrumented releases with PostHog and WebEngage.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {Zenzop International Pvt Ltd}{Aug 2025 -- Nov 2025}
+    {SDE-I, Full Stack Developer}{Noida, India}
+    \resumeItemListStart
+      \resumeItem{Built the customer Shop and partner Rider apps end to end in React Native for iOS and Android, integrating Google Maps for real-time geolocation and route optimization.}
+      \resumeItem{Worked across the Node.js backend on the order lifecycle and live-tracking APIs both apps consume, and documented the full surface in Swagger so the client and backend teams integrated against one source of truth.}
+      \resumeItem{Built the delivery ETA engine on the server from distance matrices, live traffic, streaming rider position and historical route averages instead of straight-line estimates, improving ETA accuracy by 28\%.}
+      \resumeItem{Added background live tracking that survives a locked phone and native iOS Live Activities in Swift for Dynamic Island and lock-screen updates; refactored both apps for 30\% faster load times and shipped OTA releases through CodePush.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {Infinite Locus}{Feb 2025 -- Aug 2025}
+    {SDE-I, Full Stack Developer}{Gurugram, India}
+    \resumeItemListStart
+      \resumeItem{Architected the Wellbeing Nutrition app from scratch in React Native on Shopify, with Node.js and Express.js middleware that reshaped Shopify's GraphQL responses server-side, cutting frontend processing and app size.}
+      \resumeItem{Migrated the app from Appmaker to core React Native and shipped it over the existing App Store and Play Store listings on the same bundle ID, so users updated seamlessly with ratings intact.}
+      \resumeItem{Built Node.js, Express.js and MongoDB services for e-commerce data flows, inventory and API endpoints, and engineered custom Shopify metaobjects consumed through them for tailored features.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {Gurucool}{Nov 2022 -- Feb 2025}
+    {React Native Developer}{Jaipur, India}
+    \resumeItemListStart
+      \resumeItem{Led a team of 4 on chat, building an in-house chat system on GraphQL and Node.js with 95\% interaction success and integrating the Tencent SDK to cut chat bugs by 90\%.}
+      \resumeItem{Optimized long lists with FlashList and native modules, and moved push handling from a third-party library to the native iOS UserNotifications framework, improving delivery reliability by 15\%.}
+      \resumeItem{Ran Firebase A/B tests that lifted engagement 20\%, and used CleverTap for event tracking and lifecycle notifications.}
+    \resumeItemListEnd
+
+  \resumeSubheading
+    {Fibotalk (Cubestacks)}{Jan 2022 -- May 2022}
+    {Software Development Intern}{Bangalore, India}
+    \resumeItemListStart
+      \resumeItem{Built the full-stack Haxo app with React, Node.js, Express, MongoDB and JWT auth, raising engagement 25\% with a Figma-aligned UI.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+\vspace{-8pt}
+
+%------------------------- PROJECTS -------------------------
+\section{Projects}
+\resumeSubHeadingListStart
+
+  \resumeProjectHeading
+    {\textbf{CodeVouch} $|$ \emph{TypeScript, Node.js, CLI, ts-morph} $|$ published on npm}
+    {\small \link{https://www.npmjs.com/package/codevouch}{npm} $|$ \link{https://github.com/saif-09/codevouch}{GitHub}}
+    \resumeItemListStart
+      \resumeItem{Published a zero-setup CLI (\texttt{npm i -g codevouch}) that audits every direct dependency against the OSV advisory database at the version pinned in the lockfile, not the latest release, so vulnerable pins are not reported clean.}
+      \resumeItem{Detects dependencies nothing imports through AST analysis with ts-morph, and flags deprecated packages with install weight.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Ueue} $|$ \emph{React Native, Node.js} $-$ built solo: iOS and Android apps, a Chrome extension and a web app}
+    {\small \link{https://ueue.ziyarex.com/}{Site} $|$ \link{https://apps.apple.com/in/app/save-watch-later-ueue/id6783338928}{iOS} $|$ \link{https://play.google.com/store/apps/details?id=com.ueue}{Android}}
+    \resumeItemListStart
+      \resumeItem{Not a passive bookmark list: resurfaces each save on a schedule and picks what fits the time you actually have, so saves get finished instead of forgotten, with shared lists for collaborating with friends.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Slate} $|$ \emph{Swift, macOS}}
+    {\small \link{https://saifsiddiqui.in/work/slate/}{Site}}
+    \resumeItemListStart
+      \resumeItem{Renders your task list as the desktop wallpaper itself, redrawing in real time as tasks change, so the list sits where you already look.}
+      \resumeItem{Integrates with Apple Reminders, so a task added by voice through Siri shows up on the desktop with no app to open.}
+    \resumeItemListEnd
+
+\resumeSubHeadingListEnd
+\vspace{-8pt}
+
+%------------------------- EDUCATION -------------------------
+\section{Education}
+\resumeSubHeadingListStart
+  \resumeProjectHeading
+    {\textbf{AKTU, Lucknow} $|$ \emph{Bachelor of Technology}, 2020 \, $|$ \, \textbf{Coding Ninjas} $|$ \emph{MERN Stack Development}, 2022}{}
+\resumeSubHeadingListEnd
+
+\end{document}

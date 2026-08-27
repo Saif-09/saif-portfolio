@@ -1,0 +1,57 @@
+# Compile resume/resume.tex to public/Mohd_Saif_Resume.pdf and commit it back.
+#
+# Why: /resume is served straight from public/Mohd_Saif_Resume.pdf, so the live URL is
+# whatever this workflow last committed. Edit the .tex from anywhere (including
+# github.dev on a phone), push, and the deployed PDF follows within a minute.
+# No local LaTeX install required.
+name: Build resume PDF
+
+on:
+  push:
+    branches: [main]
+    # Only the source triggers a build. The PDF this workflow commits is not in
+    # this list, so it can never retrigger itself.
+    paths:
+      - 'resume/resume.tex'
+      - '.github/workflows/resume.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resume-pdf
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Full TeX Live image: carries fontawesome5, extarticle and glyphtounicode.
+      - name: Compile with pdfLaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: resume.tex
+          working_directory: resume
+
+      - name: Move the PDF into public/
+        run: mv resume/resume.pdf public/Mohd_Saif_Resume.pdf
+
+      - name: Commit the rebuilt PDF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/Mohd_Saif_Resume.pdf
+          # No diff means the .tex change was cosmetic; nothing to push.
+          if git diff --quiet --cached; then
+            echo "PDF is byte-identical, nothing to commit"
+          else
+            # Deliberately no [skip ci] here: Vercel treats it as "skip this
+            # deployment", so the rebuilt PDF would never reach the live URL.
+            # The paths: filter above is what stops this commit from
+            # retriggering the workflow.
+            git commit -m "Rebuild resume PDF from resume.tex"
+            git push
+          fi

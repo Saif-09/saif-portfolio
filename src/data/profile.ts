@@ -8,8 +8,15 @@ export const profile = {
   email: 'saifmd238@gmail.com',
   github: 'https://github.com/Saif-09',
   linkedin: 'https://www.linkedin.com/in/mohd-saif-134076141/',
-  resume:
-    'https://drive.google.com/file/d/133SpYRkTrLrvGxjR7F51gR-ZJYC_F2O2/view',
+  /**
+   * Served from this site, never a Drive link: /resume 302s to the PDF in
+   * public/ (redirect map in astro.config.mjs). The file is rebuilt from
+   * resume/resume.tex by CI, so this URL never changes when the resume does.
+   * `resume` is site-relative for links; `resumeUrl` is absolute for anything
+   * quoted outside the page (the AI corpus, llms.txt).
+   */
+  resume: '/resume',
+  resumeUrl: 'https://saifsiddiqui.in/resume',
 } as const;
 
 /**

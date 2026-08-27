@@ -1,4 +1,4 @@
-# saif-portfolio — everyone is welcome, including AI crawlers.
+# saif-portfolio: everyone is welcome, including AI crawlers.
 # https://saifsiddiqui.in
 
 User-agent: GPTBot
