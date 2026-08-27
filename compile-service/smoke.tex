@@ -1,0 +1,23 @@
+% Build-time proof that every package resume.tex loads is present in the image.
+% Keep this in sync with the preamble of ../resume/resume.tex.
+\documentclass[letterpaper,9pt]{extarticle}
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{etoolbox}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\begin{document}
+\faPhone* \faEnvelope \faGlobe \faLinkedin \faGithub
+\ifdefstring{\undefined}{x}{}{}
+Smoke test.
+\end{document}

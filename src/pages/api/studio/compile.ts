@@ -2,16 +2,26 @@ import type { APIRoute } from 'astro';
 import { guard, json } from '../../../lib/studio/guard';
 import { pushDraft, latestPreviewRun, GithubError } from '../../../lib/studio/github';
 import { sanityCheck, MAX_TEX_CHARS } from '../../../lib/studio/edit';
+import {
+  fastCompile,
+  fastCompileConfigured,
+  CompileServiceError,
+} from '../../../lib/studio/compileService';
 
 export const prerender = false;
 
 /**
  * Draft compile: build the current editor contents without publishing them.
  *
- * POST starts one, GET reports on it. The compile runs in CI (there is no LaTeX
- * runtime on Vercel), so this takes about a minute rather than the couple of
- * seconds a local engine would. In exchange it is the same compiler, with the
- * same one-page gate, that decides what actually gets published.
+ * Two paths, picked by whether COMPILE_URL is configured:
+ *   - instant: compile-service/ on Cloud Run answers in this request, warm in a
+ *     few hundred milliseconds, and POST returns the PDFs directly.
+ *   - ci: push the draft to the resume-preview branch and let GitHub Actions
+ *     build it, which works everywhere but costs about a minute, nearly all of
+ *     it pulling the TeX image. POST returns a commit; GET polls it.
+ *
+ * Either way it is the same compiler and the same one-page gate that decide
+ * what gets published, and either way nothing is published.
  */
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   const blocked = guard(request, clientAddress);
@@ -34,9 +44,25 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return json({ error: `Will not compile: ${problems.join('; ')}.`, problems }, 422);
   }
 
+  /* Fast path: the compile service answers in the same request. */
+  if (fastCompileConfigured()) {
+    try {
+      const { pdfs, ms } = await fastCompile(tex);
+      return json({ mode: 'instant', pdfs, ms });
+    } catch (err) {
+      if (err instanceof CompileServiceError) {
+        /* A LaTeX problem. CI would reach the same verdict in a minute, so
+           report it now rather than falling back. */
+        return json({ error: err.message, mode: 'instant' }, 422);
+      }
+      /* The service is down or slow. CI still works, so use it. */
+      console.warn('compile service unavailable, falling back to CI:', err);
+    }
+  }
+
   try {
     const { commitSha } = await pushDraft(tex);
-    return json({ started: true, commitSha });
+    return json({ mode: 'ci', started: true, commitSha });
   } catch (err) {
     if (err instanceof GithubError) return json({ error: err.message }, err.status);
     return json({ error: err instanceof Error ? err.message : 'Could not start the compile.' }, 500);

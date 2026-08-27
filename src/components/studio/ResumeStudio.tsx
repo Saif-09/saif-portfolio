@@ -4,12 +4,14 @@
  * Two previews, deliberately distinguished, because confusing them would be
  * worse than not having one:
  *   - Published: the PDF live on the site right now.
- *   - Draft: the editor's current source, compiled in CI without publishing.
+ *   - Draft: the editor's current source, compiled without publishing.
  *
  * The draft compile is the same compiler and the same one-page gate that decide
  * what gets published, so a draft that would spill onto page 2 fails here first.
- * It runs in CI because there is no LaTeX runtime on Vercel, which costs about a
- * minute; the UI shows a running clock rather than pretending otherwise.
+ * It resolves one of two ways, and the UI reports which rather than pretending
+ * they are the same: the compile service answers inside the request in a few
+ * hundred milliseconds, or, when that is not configured, CI builds it in about a
+ * minute behind a running clock.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -85,6 +87,7 @@ export default function ResumeStudio() {
   const [compileError, setCompileError] = useState('');
   const [compileRun, setCompileRun] = useState<Run | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [compileMs, setCompileMs] = useState<number | null>(null);
   const [draftUrls, setDraftUrls] = useState<Record<string, string>>({});
   const [draftOf, setDraftOf] = useState<string | null>(null);
   const [source, setSource] = useState<'published' | 'draft'>('published');
@@ -237,6 +240,36 @@ export default function ResumeStudio() {
 
   /* ---------------------------------------------------------- draft compile */
 
+  /** Replace the draft with a new set of blob URLs, revoking the old ones. */
+  const adoptDraft = useCallback((next: Record<string, string>, forTex: string) => {
+    setDraftUrls((old) => {
+      Object.values(old).forEach((url) => URL.revokeObjectURL(url));
+      blobs.current = blobs.current.filter((u) => !Object.values(old).includes(u));
+      return next;
+    });
+    setDraftOf(forTex);
+    setSource('draft');
+  }, []);
+
+  /** base64 straight from the compile service, keyed by published filename. */
+  const adoptInstant = useCallback(
+    (pdfs: Record<string, string>, list: Variant[], forTex: string) => {
+      const next: Record<string, string> = {};
+      for (const v of list) {
+        const b64 = pdfs[v.pdf.replace(/^\//, '')];
+        if (!b64) continue;
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+        const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+        blobs.current.push(url);
+        next[v.id] = url;
+      }
+      if (Object.keys(next).length === 0) return false;
+      adoptDraft(next, forTex);
+      return true;
+    },
+    [adoptDraft],
+  );
+
   const fetchDraftPdfs = useCallback(
     async (list: Variant[], forTex: string) => {
       const next: Record<string, string> = {};
@@ -256,16 +289,10 @@ export default function ResumeStudio() {
         }),
       );
       if (Object.keys(next).length === 0) return false;
-      setDraftUrls((old) => {
-        Object.values(old).forEach((url) => URL.revokeObjectURL(url));
-        blobs.current = blobs.current.filter((u) => !Object.values(old).includes(u));
-        return next;
-      });
-      setDraftOf(forTex);
-      setSource('draft');
+      adoptDraft(next, forTex);
       return true;
     },
-    [key],
+    [key, adoptDraft],
   );
 
   const startCompile = useCallback(
@@ -294,7 +321,23 @@ export default function ResumeStudio() {
 
       let commitSha = '';
       try {
-        const started = await api('compile', { method: 'POST', body: JSON.stringify({ tex: which }) });
+        const started = await api('compile', {
+          method: 'POST',
+          body: JSON.stringify({ tex: which }),
+        });
+
+        /* The compile service answered in this request: nothing to poll. */
+        if (started.mode === 'instant' && started.pdfs) {
+          if (adoptInstant(started.pdfs, variants, which)) {
+            setCompileMs(started.ms ?? null);
+            stop('ready');
+          } else {
+            stop('failed', 'The compile returned no readable PDFs.');
+          }
+          return;
+        }
+
+        setCompileMs(null);
         commitSha = started.commitSha ?? '';
       } catch (err) {
         stop('failed', err instanceof Error ? err.message : 'Could not start the compile.');
@@ -326,7 +369,7 @@ export default function ResumeStudio() {
         }
       }, 6000);
     },
-    [api, compileState, fetchDraftPdfs, variants],
+    [api, compileState, fetchDraftPdfs, adoptInstant, variants],
   );
 
   /* Auto compile: fires once you stop working, not while you type. */
@@ -647,7 +690,10 @@ export default function ResumeStudio() {
             {source === 'draft'
               ? 'Draft: your editor contents, compiled but not published.'
               : 'Published: what the live URLs serve right now.'}{' '}
-            A compile takes about a minute, and fails if a variant no longer fits one page.
+            {compileMs !== null
+              ? ` Compiled in ${(compileMs / 1000).toFixed(1)}s.`
+              : ' A compile takes about a minute unless the compile service is wired up.'}{' '}
+            It fails if a variant no longer fits one page.
           </p>
         </section>
 
