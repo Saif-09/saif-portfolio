@@ -24,3 +24,6 @@ ABOUT-MOHD-SAIF.md
 direction-v2-bold.html
 color-directions.html
 _shot.mjs
+# resume build artefacts (the published PDFs live in public/)
+resume/out/
+resume/.build/

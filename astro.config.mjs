@@ -34,6 +34,18 @@ export default defineConfig({
     '/resume': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
     '/resume.pdf': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
     '/cv': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+    // Role-tailored variants, all built from the same resume/resume.tex.
+    // Keep these in sync with pdf_name() in resume/build.sh.
+    '/resume/fullstack': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+    '/resume/mobile': {
+      status: 302,
+      destination: '/Mohd_Saif_Resume_Mobile.pdf',
+    },
+    '/resume/ai': { status: 302, destination: '/Mohd_Saif_Resume_AI.pdf' },
+    '/resume/product': {
+      status: 302,
+      destination: '/Mohd_Saif_Resume_Product.pdf',
+    },
   },
   integrations: [
     react(),

@@ -1,5 +1,5 @@
 %-------------------------------------------------------------------------------
-% Mohd Saif - Full Stack Developer Resume  (single page)
+% Mohd Saif - Resume, four variants from one source  (single page each)
 % Layout based on the "Jake's Resume" template (MIT License)
 % Compile with pdfLaTeX. Requires the `fontawesome5` package.
 %
@@ -26,7 +26,51 @@
 \usepackage[english]{babel}
 \usepackage{tabularx}
 \usepackage{fontawesome5}
+\usepackage{etoolbox}
 \input{glyphtounicode}
+
+%========================= VARIANT SWITCH =====================================
+% Build a variant WITHOUT editing this file:
+%   pdflatex -jobname=resume-product "\def\variant{product}\input{resume.tex}"
+% Or run ./build.sh, which builds every variant and checks each is one page.
+%
+% Valid variants: fullstack (default), mobile, ai, product
+% Change the line below to switch the default when compiling in Overleaf.
+\providecommand{\variant}{fullstack}
+%==============================================================================
+% Everything variant-specific is defined ONCE below. To add a new variant, copy
+% one \ifdefstring block and override only the pieces you want to change.
+%==============================================================================
+
+% ---------- the five swappable pieces, with fullstack as the default ----------
+\newcommand{\summaryBody}{Full stack developer with 3.5+ years building and launching products end to end: React Native apps on iOS and Android, Next.js web, and the Node.js backends behind them. Shipped apps for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, owning architecture, native integrations, real-time features and payments.}
+\newcommand{\roleTitle}{Full Stack Developer}
+\newcommand{\skillsOrder}{\skillBackend \\ \skillMobile \\ \skillAI}
+\newcommand{\shoppinOrder}{\shoppinBackend \shoppinOps \shoppinAI \shoppinApp}
+\newcommand{\shoppinIntro}{Core product engineer on an AI shopping and virtual try-on platform, working across the React Native apps for iOS and Android, the Next.js web store and the Node.js backend.}
+
+% ---------- mobile / React Native roles ----------
+\ifdefstring{\variant}{mobile}{%
+  \renewcommand{\summaryBody}{React Native developer with 3.5+ years shipping iOS and Android apps end to end, from architecture and native modules through app-store release, backed by the Node.js services behind them. Shipped apps for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, owning native integrations, performance and real-time features.}%
+  \renewcommand{\roleTitle}{React Native Developer}% these are the actual titles held
+  \renewcommand{\skillsOrder}{\skillMobile \\ \skillBackend \\ \skillAI}%
+  \renewcommand{\shoppinOrder}{\shoppinApp \shoppinAI \shoppinBackend \shoppinOps}%
+}{}
+
+% ---------- AI / applied-LLM engineering roles ----------
+\ifdefstring{\variant}{ai}{%
+  \renewcommand{\summaryBody}{Full stack developer with 3.5+ years shipping AI-powered products end to end, from LLM pipelines and real-time streaming to the React Native and Next.js clients on top of them. Shipped apps for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, owning architecture, real-time features and payments.}%
+  \renewcommand{\skillsOrder}{\skillAI \\ \skillBackend \\ \skillMobile}%
+  \renewcommand{\shoppinOrder}{\shoppinAI \shoppinBackend \shoppinOps \shoppinApp}%
+}{}
+
+% ---------- technical product manager / AI product roles ----------
+\ifdefstring{\variant}{product}{%
+  \renewcommand{\summaryBody}{Product engineer who works like a technical PM on AI products: scoping and prioritising features with design, building them across mobile, web and backend, then measuring whether they moved the numbers. 3.5+ years shipping for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, from first sketch through app-store review to iteration on real usage.}%
+  \renewcommand{\skillsOrder}{\skillAI \\ \skillMobile \\ \skillBackend}%
+  \renewcommand{\shoppinOrder}{\shoppinAI \shoppinOps \shoppinApp \shoppinBackend}%
+  \renewcommand{\shoppinIntro}{Own AI features end to end on an AI shopping and virtual try-on platform: shaping scope with design and product, building across the React Native apps, the Next.js store and the Node.js backend, then reading behaviour in PostHog to decide what ships next.}%
+}{}
 
 \pagestyle{fancy}
 \fancyhf{}
@@ -99,6 +143,27 @@
   \begin{itemize}[leftmargin=0.15in, topsep=2pt, parsep=0pt, itemsep=1pt]}
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-2pt}}
 
+%------------------- CONTENT BLOCKS THE VARIANTS REORDER -------------------
+% Skills lines
+\newcommand{\skillMobile}{\textbf{Frontend \& Mobile}: React Native, React, Next.js, Expo, Redux, Zustand, Tailwind CSS, Reanimated, FlashList, SwiftUI (Live Activities)}
+\newcommand{\skillBackend}{\textbf{Backend \& APIs}: Node.js, Express.js, GraphQL, REST, Server-Sent Events, WebSockets, Shopify GraphQL, Swagger}
+\newcommand{\skillAI}{\textbf{AI \& Analytics}: Claude API, Claude Code, LLM APIs, RAG, CleverTap, Firebase A/B testing, PostHog, WebEngage}
+
+% Shoppin' bullet groups. Add new bullets to the group they belong to, not inline,
+% or they will sit in the same position in every variant.
+\newcommand{\shoppinAI}{%
+  \resumeItem{Shipped the AI custom-clothing experience end to end: users describe what they want in chat, refine it in an in-browser design studio and receive made-to-order clothes, covering requirement gathering, live design generation, automatic pricing and production handoff.}
+  \resumeItem{Contributed to the agent-based pattern-making engine that turns a garment image or spec sheet into a production-ready, fully graded ASTM sewing pattern at roughly 95\% accuracy in minutes, replacing days of manual CAD work.}}
+\newcommand{\shoppinBackend}{%
+  \resumeItem{Designed and built the Node.js APIs powering virtual try-on, look generation and content delivery, and stabilized the frontend architecture for reliability under high load.}
+  \resumeItem{Built composite device-ID auto-login across iOS and Android on Keychain and Block Store, threading \texttt{device\_id} through OTP verification, the Auth0 callback and guest login, wrapped in transactions for integrity with Redis locks that fail open during an outage so sign-in is never blocked.}
+  \resumeItem{Replaced polling with Server-Sent Events to stream generation progress and recommendations in real time, keeping the app responsive during long AI operations.}}
+\newcommand{\shoppinOps}{%
+  \resumeItem{Built the internal order-management dashboard and a WhatsApp flow pushing every order status change to the customer; instrumented releases with PostHog and WebEngage, treating adoption and retention as part of the definition of done.}}
+\newcommand{\shoppinApp}{%
+  \resumeItem{Rebuilt the video feed for Instagram-style infinite scroll and playback using lazy loading, compression, caching and adaptive streaming.}
+  \resumeItem{Integrated Apple In-App Subscriptions (StoreKit) with receipt validation and lifecycle management for premium tiers, alongside Razorpay, Stripe, Apple Pay and Google Pay checkout.}}
+
 %===============================================================================
 \begin{document}
 
@@ -120,7 +185,7 @@
 \section{Summary}
 \begin{itemize}[leftmargin=0.15in, label={}, topsep=2pt, parsep=0pt, itemsep=0pt]
   \small{\item{
-    Full stack developer with 3.5+ years building and launching products end to end: React Native apps on iOS and Android, Next.js web, and the Node.js backends behind them. Shipped apps for Shoppin', Wellbeing Nutrition, Supertails and Zenzop, owning architecture, native integrations, real-time features and payments. Also ships independent products: \link{https://www.npmjs.com/package/codevouch}{CodeVouch}, a dependency-audit CLI on npm; \link{https://ueue.ziyarex.com/}{Ueue}, a save-for-later app that resurfaces saves at the right moment; and \link{https://saifsiddiqui.in/work/slate/}{Slate}, a live task list rendered as your Mac wallpaper.
+    \summaryBody{}  Also ships independent products: \link{https://www.npmjs.com/package/codevouch}{CodeVouch}, a dependency-audit CLI on npm; \link{https://ueue.ziyarex.com/}{Ueue}, a save-for-later app that resurfaces saves at the right moment; and \link{https://saifsiddiqui.in/work/slate/}{Slate}, a live task list rendered as your Mac wallpaper.
   }}
 \end{itemize}
 \vspace{-13pt}
@@ -130,11 +195,9 @@
 \begin{itemize}[leftmargin=0.15in, label={}, topsep=2pt, parsep=0pt, itemsep=0pt]
   \small{\item{
     \textbf{Languages}: TypeScript, JavaScript, Go, Swift, Java, Python, SQL, HTML/CSS \\
-    \textbf{Frontend \& Mobile}: React Native, React, Next.js, Expo, Redux, Zustand, Tailwind CSS, Reanimated, FlashList, SwiftUI (Live Activities) \\
-    \textbf{Backend \& APIs}: Node.js, Express.js, GraphQL, REST, Server-Sent Events, WebSockets, Shopify GraphQL, Swagger \\
+    \skillsOrder \\
     \textbf{Databases \& DevOps}: MongoDB, PostgreSQL, Firebase, Redis, MMKV, Docker, Git, CodePush / Stallion (OTA), CI/CD \\
-    \textbf{Payments}: Apple IAP (StoreKit), Razorpay, Stripe, PayPal, Apple Pay, Google Pay, GoKwik, Qonversion \\
-    \textbf{AI \& Analytics}: Claude API, Claude Code, LLM APIs, RAG, CleverTap, Firebase A/B testing, PostHog, WebEngage
+    \textbf{Payments}: Apple IAP (StoreKit), Razorpay, Stripe, PayPal, Apple Pay, Google Pay, GoKwik, Qonversion
   }}
 \end{itemize}
 \vspace{-13pt}
@@ -147,20 +210,13 @@
     {Shoppin'}{Dec 2025 -- Present}
     {Product Engineer II}{Delhi, India}
     \resumeItemListStart
-      \resumeItem{Core product engineer on an AI shopping and virtual try-on platform, working across the React Native apps for iOS and Android, the Next.js web store and the Node.js backend.}
-      \resumeItem{Shipped the AI custom-clothing experience end to end: users describe what they want in chat, refine it in an in-browser design studio and receive made-to-order clothes, covering requirement gathering, live design generation, automatic pricing and production handoff.}
-      \resumeItem{Contributed to the agent-based pattern-making engine that turns a garment image or spec sheet into a production-ready, fully graded ASTM sewing pattern at roughly 95\% accuracy in minutes, replacing days of manual CAD work.}
-      \resumeItem{Designed and built the Node.js APIs powering virtual try-on, look generation and content delivery, and stabilized the frontend architecture for reliability under high load.}
-      \resumeItem{Built composite device-ID auto-login across iOS and Android on Keychain and Block Store, threading \texttt{device\_id} through OTP verification, the Auth0 callback and guest login, wrapped in transactions for integrity with Redis locks that fail open during an outage so sign-in is never blocked.}
-      \resumeItem{Replaced polling with Server-Sent Events to stream generation progress and recommendations in real time, keeping the app responsive during long AI operations.}
-      \resumeItem{Rebuilt the video feed for Instagram-style infinite scroll and playback using lazy loading, compression, caching and adaptive streaming.}
-      \resumeItem{Integrated Apple In-App Subscriptions (StoreKit) with receipt validation and lifecycle management for premium tiers, alongside Razorpay, Stripe, Apple Pay and Google Pay checkout.}
-      \resumeItem{Built the internal order-management dashboard and a WhatsApp flow pushing every order status change to the customer; instrumented releases with PostHog and WebEngage.}
+      \resumeItem{\shoppinIntro}
+      \shoppinOrder
     \resumeItemListEnd
 
   \resumeSubheading
     {Zenzop International Pvt Ltd}{Aug 2025 -- Nov 2025}
-    {SDE-I, Full Stack Developer}{Noida, India}
+    {SDE-I, \roleTitle}{Noida, India}
     \resumeItemListStart
       \resumeItem{Built the customer Shop and partner Rider apps end to end in React Native for iOS and Android, integrating Google Maps for real-time geolocation and route optimization.}
       \resumeItem{Worked across the Node.js backend on the order lifecycle and live-tracking APIs both apps consume, and documented the full surface in Swagger so the client and backend teams integrated against one source of truth.}
@@ -170,7 +226,7 @@
 
   \resumeSubheading
     {Infinite Locus}{Feb 2025 -- Aug 2025}
-    {SDE-I, Full Stack Developer}{Gurugram, India}
+    {SDE-I, \roleTitle}{Gurugram, India}
     \resumeItemListStart
       \resumeItem{Architected the Wellbeing Nutrition app from scratch in React Native on Shopify, with Node.js and Express.js middleware that reshaped Shopify's GraphQL responses server-side, cutting frontend processing and app size.}
       \resumeItem{Migrated the app from Appmaker to core React Native and shipped it over the existing App Store and Play Store listings on the same bundle ID, so users updated seamlessly with ratings intact.}

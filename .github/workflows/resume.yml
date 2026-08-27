@@ -1,18 +1,22 @@
-# Compile resume/resume.tex to public/Mohd_Saif_Resume.pdf and commit it back.
+# Compile every resume variant from resume/resume.tex and commit the PDFs back.
 #
-# Why: /resume is served straight from public/Mohd_Saif_Resume.pdf, so the live URL is
+# Why: each variant is served straight from public/, so the live URLs are
 # whatever this workflow last committed. Edit the .tex from anywhere (including
-# github.dev on a phone), push, and the deployed PDF follows within a minute.
+# github.dev on a phone), push, and the deployed PDFs follow within a minute.
 # No local LaTeX install required.
-name: Build resume PDF
+#
+# build.sh fails the run if any variant is not exactly one page, and nothing is
+# committed when it fails, so a bad edit cannot publish a 2-page resume.
+name: Build resume PDFs
 
 on:
   push:
     branches: [main]
-    # Only the source triggers a build. The PDF this workflow commits is not in
-    # this list, so it can never retrigger itself.
+    # Only the source triggers a build. The PDFs this workflow commits are not
+    # in this list, so it can never retrigger itself.
     paths:
       - 'resume/resume.tex'
+      - 'resume/build.sh'
       - '.github/workflows/resume.yml'
   workflow_dispatch:
 
@@ -29,29 +33,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Full TeX Live image: carries fontawesome5, extarticle and glyphtounicode.
-      - name: Compile with pdfLaTeX
-        uses: xu-cheng/latex-action@v3
+      # Same image xu-cheng/latex-action uses, called directly so one image
+      # pull (~2 min, the bulk of this job) covers all four compiles instead of
+      # one pull per variant. Carries fontawesome5, extarticle, glyphtounicode.
+      - name: Build all variants
+        run: |
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" \
+            ghcr.io/xu-cheng/texlive-full:latest \
+            bash resume/build.sh
+
+      # The container writes as root; hand the files back to the runner.
+      - name: Fix ownership
+        run: sudo chown -R "$(id -u):$(id -g)" resume/out resume/.build
+
+      - name: Stage PDFs for the site
+        run: cp resume/out/*.pdf public/
+
+      # A downloadable copy on the run itself, even when the commit is a no-op.
+      - uses: actions/upload-artifact@v4
         with:
-          root_file: resume.tex
-          working_directory: resume
+          name: resume-pdfs
+          path: resume/out/*.pdf
 
-      - name: Move the PDF into public/
-        run: mv resume/resume.pdf public/Mohd_Saif_Resume.pdf
-
-      - name: Commit the rebuilt PDF
+      - name: Commit the rebuilt PDFs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/Mohd_Saif_Resume.pdf
+          git add public/Mohd_Saif_Resume*.pdf
           # No diff means the .tex change was cosmetic; nothing to push.
           if git diff --quiet --cached; then
-            echo "PDF is byte-identical, nothing to commit"
+            echo "PDFs are byte-identical, nothing to commit"
           else
             # Deliberately no [skip ci] here: Vercel treats it as "skip this
-            # deployment", so the rebuilt PDF would never reach the live URL.
+            # deployment", so the rebuilt PDFs would never reach the live URLs.
             # The paths: filter above is what stops this commit from
             # retriggering the workflow.
-            git commit -m "Rebuild resume PDF from resume.tex"
+            git commit -m "Rebuild resume PDFs from resume.tex"
             git push
           fi
