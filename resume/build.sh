@@ -14,17 +14,17 @@ cd "$(dirname "$0")"
 
 SRC="resume.tex"
 OUTDIR="out"
-VARIANTS=("fullstack" "mobile" "ai" "product")
+VARIANTS=("product" "fullstack" "mobile" "ai")
 [ $# -gt 0 ] && VARIANTS=("$@")
 
 # variant -> published filename. Keep in sync with the redirects in
 # ../astro.config.mjs; nothing else maps these two together.
 pdf_name() {
   case "$1" in
-    fullstack) echo "Mohd_Saif_Resume.pdf" ;;
+    product)   echo "Mohd_Saif_Resume.pdf" ;;          # the default, so it gets the clean name
+    fullstack) echo "Mohd_Saif_Resume_Fullstack.pdf" ;;
     mobile)    echo "Mohd_Saif_Resume_Mobile.pdf" ;;
     ai)        echo "Mohd_Saif_Resume_AI.pdf" ;;
-    product)   echo "Mohd_Saif_Resume_Product.pdf" ;;
     *)         echo "" ;;
   esac
 }

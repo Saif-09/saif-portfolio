@@ -8,10 +8,17 @@
  */
 export const VARIANTS = [
   {
-    id: 'fullstack',
-    label: 'Full stack',
+    id: 'product',
+    label: 'Product',
     path: '/resume',
     pdf: '/Mohd_Saif_Resume.pdf',
+    leads: 'Technical PM on AI products: scope, build, measure. The default.',
+  },
+  {
+    id: 'fullstack',
+    label: 'Full stack',
+    path: '/resume/fullstack',
+    pdf: '/Mohd_Saif_Resume_Fullstack.pdf',
     leads: 'Backend and APIs, shipping end to end',
   },
   {
@@ -27,13 +34,6 @@ export const VARIANTS = [
     path: '/resume/ai',
     pdf: '/Mohd_Saif_Resume_AI.pdf',
     leads: 'LLM pipelines, streaming, applied AI',
-  },
-  {
-    id: 'product',
-    label: 'Product',
-    path: '/resume/product',
-    pdf: '/Mohd_Saif_Resume_Product.pdf',
-    leads: 'Technical PM on AI products: scope, build, measure',
   },
 ] as const;
 

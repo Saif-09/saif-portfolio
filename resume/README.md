@@ -7,13 +7,18 @@ your history; only five pieces swap per variant. Never fork the file.
 
 | Variant | URL | Leads with |
 |---|---|---|
-| `fullstack` (default) | `saifsiddiqui.in/resume` | Backend & APIs, shipping end to end |
+| `product` **(default)** | `saifsiddiqui.in/resume` | Technical PM on AI products: scope, build, measure |
+| `fullstack` | `saifsiddiqui.in/resume/fullstack` | Backend & APIs, shipping end to end |
 | `mobile` | `saifsiddiqui.in/resume/mobile` | Frontend & Mobile, native work, app-store releases |
 | `ai` | `saifsiddiqui.in/resume/ai` | AI & Analytics, LLM pipelines, streaming |
-| `product` | `saifsiddiqui.in/resume/product` | Technical PM on AI products: scope, build, measure |
 
-`/cv`, `/resume.pdf` and `/resume/fullstack` all land on the default.
-Each downloads as `Mohd_Saif_Resume[_Variant].pdf`.
+`/cv`, `/resume.pdf` and `/resume/product` all land on the default.
+
+The default is `product` because the site positions Saif as a product engineer,
+so that is what the footer's Résumé link and the recited URL should give. The
+default also owns the clean filename `Mohd_Saif_Resume.pdf`: the others download
+as `Mohd_Saif_Resume_Fullstack/Mobile/AI.pdf`, so nothing a recruiter saves from
+the main link is labelled with a variant name.
 
 ## The studio: saifsiddiqui.in/studio
 

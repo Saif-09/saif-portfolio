@@ -22,6 +22,10 @@ export default defineConfig({
    * Mohd_Saif_Resume.pdf so it lands in a recruiter's downloads folder under
    * that name rather than as resume.pdf.
    *
+   * /resume serves the PRODUCT variant: it is the default because the site
+   * positions Saif as a product engineer. It therefore owns the clean
+   * filename, so nothing a recruiter downloads is labelled with a variant.
+   *
    * These MUST live here, not in vercel.json: @astrojs/vercel writes its own
    * .vercel/output/config.json via the Build Output API, which supersedes
    * vercel.json redirects/rewrites. The adapter translates this map into real
@@ -36,16 +40,16 @@ export default defineConfig({
     '/cv': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
     // Role-tailored variants, all built from the same resume/resume.tex.
     // Keep these in sync with pdf_name() in resume/build.sh.
-    '/resume/fullstack': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
+    '/resume/fullstack': {
+      status: 302,
+      destination: '/Mohd_Saif_Resume_Fullstack.pdf',
+    },
     '/resume/mobile': {
       status: 302,
       destination: '/Mohd_Saif_Resume_Mobile.pdf',
     },
     '/resume/ai': { status: 302, destination: '/Mohd_Saif_Resume_AI.pdf' },
-    '/resume/product': {
-      status: 302,
-      destination: '/Mohd_Saif_Resume_Product.pdf',
-    },
+    '/resume/product': { status: 302, destination: '/Mohd_Saif_Resume.pdf' },
   },
   integrations: [
     react(),
