@@ -15,7 +15,7 @@
  *      strings missed, and asks it to re-copy them.
  */
 import Anthropic from '@anthropic-ai/sdk';
-import { generateText } from 'ai';
+import { generateObject, jsonSchema } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { VARIANTS, type VariantId } from './variants';
 import { env } from './env';
@@ -106,6 +106,52 @@ ${tex}
 </file>`;
 }
 
+/** The shape both providers must end up producing. */
+const PROPOSAL_SCHEMA = jsonSchema<{
+  edits: { find: string; replace: string; why?: string }[];
+  note: string;
+}>({
+  type: 'object',
+  properties: {
+    edits: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          find: { type: 'string', description: 'Text copied byte for byte from the file' },
+          replace: { type: 'string', description: 'What to put in its place; empty to delete' },
+          why: { type: 'string', description: 'Short reason for this edit' },
+        },
+        required: ['find', 'replace', 'why'],
+        additionalProperties: false,
+      },
+    },
+    note: { type: 'string' },
+  },
+  required: ['edits', 'note'],
+  additionalProperties: false,
+});
+
+/** Drop anything malformed rather than trusting the model's own shape. */
+function normalizeProposal(value: unknown): { edits: ProposedEdit[]; note: string } {
+  const obj = (value ?? {}) as { edits?: unknown; note?: unknown };
+  const rawEdits = Array.isArray(obj.edits) ? obj.edits : [];
+  const edits: ProposedEdit[] = [];
+
+  for (const e of rawEdits) {
+    const edit = (e ?? {}) as Record<string, unknown>;
+    if (typeof edit.find !== 'string' || typeof edit.replace !== 'string') continue;
+    if (edit.find.length === 0) continue;
+    edits.push({
+      find: edit.find,
+      replace: edit.replace,
+      why: typeof edit.why === 'string' && edit.why ? edit.why : undefined,
+    });
+  }
+
+  return { edits, note: typeof obj.note === 'string' ? obj.note : '' };
+}
+
 /** Models wrap JSON in fences or prose no matter how firmly you ask them not to. */
 function parseProposal(raw: string): { edits: ProposedEdit[]; note: string } {
   let text = raw.trim();
@@ -119,29 +165,15 @@ function parseProposal(raw: string): { edits: ProposedEdit[]; note: string } {
     throw new Error('The model did not return JSON.');
   }
 
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(text.slice(start, end + 1));
+    return normalizeProposal(JSON.parse(text.slice(start, end + 1)));
   } catch {
-    throw new Error('The model returned malformed JSON.');
+    /* Quote the tail: a truncated reply and a chatty one look identical
+       otherwise, and this is a private tool where that detail is worth having. */
+    throw new Error(
+      `The model returned malformed JSON. It ended with: ${JSON.stringify(text.slice(-160))}`,
+    );
   }
-
-  const obj = parsed as { edits?: unknown; note?: unknown };
-  const rawEdits = Array.isArray(obj.edits) ? obj.edits : [];
-  const edits: ProposedEdit[] = [];
-
-  for (const e of rawEdits) {
-    const edit = e as Record<string, unknown>;
-    if (typeof edit.find !== 'string' || typeof edit.replace !== 'string') continue;
-    if (edit.find.length === 0) continue;
-    edits.push({
-      find: edit.find,
-      replace: edit.replace,
-      why: typeof edit.why === 'string' ? edit.why : undefined,
-    });
-  }
-
-  return { edits, note: typeof obj.note === 'string' ? obj.note : '' };
 }
 
 /**
@@ -241,7 +273,9 @@ export function sanityCheck(tex: string): string[] {
 
 /* ---------------------------------------------------------------- providers */
 
-async function viaAnthropic(prompt: string, key: string): Promise<string> {
+type Proposal = { edits: ProposedEdit[]; note: string };
+
+async function viaAnthropic(prompt: string, key: string): Promise<Proposal> {
   const client = new Anthropic({ apiKey: key });
   const response = await client.messages.create({
     model: env('STUDIO_ANTHROPIC_MODEL') || 'claude-opus-5',
@@ -257,27 +291,35 @@ async function viaAnthropic(prompt: string, key: string): Promise<string> {
     throw new Error('The model declined this request.');
   }
 
-  return response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('')
-    .trim();
+  return parseProposal(
+    response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('')
+      .trim(),
+  );
 }
 
-async function viaGemini(prompt: string, key: string): Promise<string> {
+async function viaGemini(prompt: string, key: string): Promise<Proposal> {
   const model = createGoogleGenerativeAI({ apiKey: key })(
     /* Not GEMINI_MODEL: that is set to a small chat model for the site's Ask
        widget, which is not good enough at LaTeX surgery. */
     env('STUDIO_GEMINI_MODEL') || 'gemini-2.5-flash',
   );
-  const r = await generateText({
+
+  /* Schema-constrained, not "please reply with JSON". Gemini 2.5 is a thinking
+     model, so free-text JSON gets truncated or prefaced often enough to matter:
+     asking for JSON in the prompt produced a malformed reply in production
+     while the same call worked locally. generateObject removes that class. */
+  const r = await generateObject({
     model,
+    schema: PROPOSAL_SCHEMA,
     system: SYSTEM,
     prompt,
-    maxOutputTokens: 8000,
+    maxOutputTokens: 16000,
     temperature: 0.2,
   });
-  return r.text.trim();
+  return normalizeProposal(r.object);
 }
 
 /**
@@ -285,8 +327,8 @@ async function viaGemini(prompt: string, key: string): Promise<string> {
  * collateral damage), Gemini otherwise so the studio works with the free key
  * this project already has.
  */
-function providerChain(): { name: string; run: (prompt: string) => Promise<string> }[] {
-  const chain: { name: string; run: (prompt: string) => Promise<string> }[] = [];
+function providerChain(): { name: string; run: (prompt: string) => Promise<Proposal> }[] {
+  const chain: { name: string; run: (prompt: string) => Promise<Proposal> }[] = [];
 
   const anthropicKey = env('ANTHROPIC_API_KEY');
   if (anthropicKey) {
@@ -301,7 +343,7 @@ function providerChain(): { name: string; run: (prompt: string) => Promise<strin
   return chain;
 }
 
-async function ask(prompt: string): Promise<{ raw: string; provider: string }> {
+async function ask(prompt: string): Promise<{ proposal: Proposal; provider: string }> {
   const chain = providerChain();
   if (chain.length === 0) {
     throw new Error(
@@ -312,7 +354,7 @@ async function ask(prompt: string): Promise<{ raw: string; provider: string }> {
   let lastError = '';
   for (const provider of chain) {
     try {
-      return { raw: await provider.run(prompt), provider: provider.name };
+      return { proposal: await provider.run(prompt), provider: provider.name };
     } catch (err) {
       lastError = err instanceof Error ? err.message : String(err);
     }
@@ -336,7 +378,7 @@ export async function editResume(
   variant?: VariantId,
 ): Promise<EditOutcome> {
   const first = await ask(buildPrompt(tex, instruction, variant));
-  const proposal = parseProposal(first.raw);
+  const proposal = first.proposal;
 
   const base = {
     provider: first.provider,
@@ -367,7 +409,7 @@ export async function editResume(
       const second = await ask(
         buildPrompt(run.tex, instruction, variant, { rejected: run.rejected }),
       );
-      const retryProposal = parseProposal(second.raw);
+      const retryProposal = second.proposal;
       if (retryProposal.edits.length > 0) {
         const again = applyEdits(run.tex, retryProposal.edits);
         run = {
