@@ -59,13 +59,15 @@ export const GET: APIRoute = async ({ request, clientAddress }) => {
 
     return json({
       run,
-      state: !isOurs
-        ? 'queued'
-        : run.status === 'completed'
-          ? run.conclusion === 'success'
-            ? 'ready'
-            : 'failed'
-          : 'building',
+      state: !run.status
+        ? 'idle'
+        : !isOurs
+          ? 'queued'
+          : run.status === 'completed'
+            ? run.conclusion === 'success'
+              ? 'ready'
+              : 'failed'
+            : 'building',
     });
   } catch (err) {
     if (err instanceof GithubError) return json({ error: err.message }, err.status);
