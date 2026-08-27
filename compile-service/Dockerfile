@@ -35,9 +35,11 @@ RUN apt-get update \
 # Fail the BUILD, not a request at 2am, if a package is missing. This document
 # loads exactly what resume.tex loads.
 COPY smoke.tex /tmp/smoke/smoke.tex
+# NOT smoke.out: hyperref writes its outline to \jobname.out and then reads it
+# back, so redirecting stdout there makes pdflatex parse its own console log.
 RUN cd /tmp/smoke \
- && pdflatex -interaction=nonstopmode -halt-on-error smoke.tex > smoke.out 2>&1 \
-    || { echo '--- smoke compile failed ---'; tail -40 smoke.out; exit 1; } \
+ && pdflatex -interaction=nonstopmode -halt-on-error smoke.tex > smoke.stdout 2>&1 \
+    || { echo '--- smoke compile failed ---'; tail -40 smoke.stdout; exit 1; } \
  && test -f smoke.pdf \
  && echo "smoke compile OK" \
  && rm -rf /tmp/smoke

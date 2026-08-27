@@ -240,20 +240,33 @@ export default function ResumeStudio() {
 
   /* ---------------------------------------------------------- draft compile */
 
-  /** Replace the draft with a new set of blob URLs, revoking the old ones. */
-  const adoptDraft = useCallback((next: Record<string, string>, forTex: string) => {
-    setDraftUrls((old) => {
-      Object.values(old).forEach((url) => URL.revokeObjectURL(url));
-      blobs.current = blobs.current.filter((u) => !Object.values(old).includes(u));
-      return next;
-    });
-    setDraftOf(forTex);
-    setSource('draft');
-  }, []);
+  /**
+   * Take a set of freshly compiled PDFs as the current draft.
+   *
+   * `merge` is what lets the on-screen variant arrive first and the other three
+   * fill in behind it: without it the second batch would wipe the first.
+   */
+  const adoptDraft = useCallback(
+    (next: Record<string, string>, forTex: string, merge = false) => {
+      setDraftUrls((old) => {
+        const replaced = merge ? Object.keys(next) : Object.keys(old);
+        replaced.forEach((id) => {
+          if (old[id]) URL.revokeObjectURL(old[id]);
+        });
+        blobs.current = blobs.current.filter(
+          (u) => !replaced.some((id) => old[id] === u),
+        );
+        return merge ? { ...old, ...next } : next;
+      });
+      setDraftOf(forTex);
+      setSource('draft');
+    },
+    [],
+  );
 
   /** base64 straight from the compile service, keyed by published filename. */
   const adoptInstant = useCallback(
-    (pdfs: Record<string, string>, list: Variant[], forTex: string) => {
+    (pdfs: Record<string, string>, list: Variant[], forTex: string, merge = false) => {
       const next: Record<string, string> = {};
       for (const v of list) {
         const b64 = pdfs[v.pdf.replace(/^\//, '')];
@@ -264,7 +277,7 @@ export default function ResumeStudio() {
         next[v.id] = url;
       }
       if (Object.keys(next).length === 0) return false;
-      adoptDraft(next, forTex);
+      adoptDraft(next, forTex, merge);
       return true;
     },
     [adoptDraft],
@@ -321,18 +334,40 @@ export default function ResumeStudio() {
 
       let commitSha = '';
       try {
+        /* Ask for the variant on screen by itself. Four variants is eight
+           pdflatex runs and about four seconds; one is about one. */
+        const onScreen = tab || variants[0]?.id;
         const started = await api('compile', {
           method: 'POST',
-          body: JSON.stringify({ tex: which }),
+          body: JSON.stringify({ tex: which, variants: onScreen ? [onScreen] : undefined }),
         });
 
         /* The compile service answered in this request: nothing to poll. */
         if (started.mode === 'instant' && started.pdfs) {
-          if (adoptInstant(started.pdfs, variants, which)) {
-            setCompileMs(started.ms ?? null);
-            stop('ready');
-          } else {
+          if (!adoptInstant(started.pdfs, variants, which)) {
             stop('failed', 'The compile returned no readable PDFs.');
+            return;
+          }
+          setCompileMs(started.ms ?? null);
+          stop('ready');
+
+          /* Then fill in the thumbnails, so they stop showing the published
+             version while the big preview shows the draft. */
+          const rest = variants.map((v) => v.id).filter((id) => id !== onScreen);
+          if (rest.length > 0) {
+            api('compile', {
+              method: 'POST',
+              body: JSON.stringify({ tex: which, variants: rest }),
+            })
+              .then((more) => {
+                /* Ignore a late answer for source that has since changed. */
+                if (more.mode === 'instant' && more.pdfs) {
+                  adoptInstant(more.pdfs, variants, which, true);
+                }
+              })
+              .catch(() => {
+                /* The thumbnails just stay on the published version. */
+              });
           }
           return;
         }
@@ -369,7 +404,7 @@ export default function ResumeStudio() {
         }
       }, 6000);
     },
-    [api, compileState, fetchDraftPdfs, adoptInstant, variants],
+    [api, compileState, fetchDraftPdfs, adoptInstant, variants, tab],
   );
 
   /* Auto compile: fires once you stop working, not while you type. */

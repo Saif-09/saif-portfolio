@@ -38,7 +38,10 @@ export function fastCompileConfigured(): boolean {
  * when the service itself is unreachable, so the caller can tell "your document
  * is broken" from "the compiler is down" and fall back only for the latter.
  */
-export async function fastCompile(tex: string): Promise<FastCompileResult> {
+export async function fastCompile(
+  tex: string,
+  only?: string[],
+): Promise<FastCompileResult> {
   const url = env('COMPILE_URL').replace(/\/$/, '');
   const secret = env('COMPILE_SECRET');
   if (!url || !secret) throw new Error('The compile service is not configured.');
@@ -52,7 +55,10 @@ export async function fastCompile(tex: string): Promise<FastCompileResult> {
       method: 'POST',
       signal: controller.signal,
       headers: { 'content-type': 'application/json', 'x-compile-secret': secret },
-      body: JSON.stringify({ tex, variants: VARIANTS.map((v) => v.id) }),
+      body: JSON.stringify({
+        tex,
+        variants: only?.length ? only : VARIANTS.map((v) => v.id),
+      }),
     });
   } catch (err) {
     throw new Error(

@@ -7,6 +7,7 @@ import {
   fastCompileConfigured,
   CompileServiceError,
 } from '../../../lib/studio/compileService';
+import { isVariantId } from '../../../lib/studio/variants';
 
 export const prerender = false;
 
@@ -27,7 +28,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const blocked = guard(request, clientAddress);
   if (blocked) return blocked;
 
-  let body: { tex?: unknown };
+  let body: { tex?: unknown; variants?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -35,6 +36,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   const tex = typeof body.tex === 'string' ? body.tex : '';
+  /* The studio asks for the variant on screen first and the rest right after,
+     so the preview it is actually looking at arrives in about a second instead
+     of waiting on all four. */
+  const only = Array.isArray(body.variants)
+    ? body.variants.filter(isVariantId)
+    : undefined;
   if (!tex) return json({ error: 'Nothing to compile.' }, 400);
   if (tex.length > MAX_TEX_CHARS) return json({ error: 'That resume source is too large.' }, 413);
 
@@ -47,7 +54,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   /* Fast path: the compile service answers in the same request. */
   if (fastCompileConfigured()) {
     try {
-      const { pdfs, ms } = await fastCompile(tex);
+      const { pdfs, ms } = await fastCompile(tex, only);
       return json({ mode: 'instant', pdfs, ms });
     } catch (err) {
       if (err instanceof CompileServiceError) {
