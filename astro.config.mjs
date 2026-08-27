@@ -51,6 +51,8 @@ export default defineConfig({
     react(),
     mdx(),
     sitemap({
+      /* /studio is a private tool, not a page of the site. */
+      filter: (page) => !page.includes('/studio'),
       i18n: {
         defaultLocale: 'en',
         locales: {

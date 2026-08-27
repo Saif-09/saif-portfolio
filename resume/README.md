@@ -15,6 +15,56 @@ your history; only five pieces swap per variant. Never fork the file.
 `/cv`, `/resume.pdf` and `/resume/fullstack` all land on the default.
 Each downloads as `Mohd_Saif_Resume[_Variant].pdf`.
 
+## The studio: saifsiddiqui.in/studio
+
+A private page that does all of this without git. Enter the studio key and you
+get, on one screen:
+
+- the live PDF for each variant, plus a **Compare all** view of all four;
+- a plain-English box: "add a bullet about X", "make the product summary shorter";
+- the raw `resume.tex` if you want to edit it by hand;
+- **Save and publish**, which commits and shows the build going green.
+
+It works on a phone. The AI box is the point there: typing an instruction beats
+editing LaTeX on a touchscreen.
+
+### How an AI edit stays safe
+
+The model never rewrites the file. It returns find/replace pairs, each of which
+must match exactly once, and:
+
+- a `find` that does not match uniquely is **rejected and shown to you**, never
+  guessed at, with one automatic retry where the model is shown its own miss;
+- the result is structure-checked (variant blocks and the five macros still
+  present, braces balanced, no em dash) before it can reach the editor, let
+  alone a commit;
+- you review the red/green diff and press Save yourself. Nothing auto-commits.
+- Save is also gated by that structure check, and then by CI's one-page gate.
+
+Two switches control it, both server-side:
+
+| Env var | What it does |
+|---|---|
+| `STUDIO_KEY` | The password. **Without it every studio route returns 503 and the tool is off.** |
+| `RESUME_GITHUB_TOKEN` | Fine-grained PAT, Contents read/write + Actions read. How the studio reads and commits `resume.tex`. |
+| `ANTHROPIC_API_KEY` | Optional. Used for AI edits when present; falls back to `GEMINI_API_KEY`. |
+
+## From the terminal
+
+```sh
+npm run resume                        # status: live URLs, last build, local diff
+npm run resume -- ai "<instruction>"  # plain-English edit, review, commit
+npm run resume -- edit                # open in $EDITOR, then commit
+npm run resume -- build               # compile all four locally (Docker or MacTeX)
+npm run resume -- push ["message"]    # commit and push as it stands
+npm run resume -- open [variant]      # open a published variant
+npm run resume -- studio              # open the browser studio
+```
+
+`ai` calls the same deployed endpoint the browser uses, so the prompt and the
+safety checks live in one place. It needs `STUDIO_KEY` in `.env`; everything
+else works on the local checkout with no key.
+
 ## Updating it quickly
 
 Edit `resume.tex`, push to `main`. CI compiles all four, refuses to publish if

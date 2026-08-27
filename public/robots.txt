@@ -54,5 +54,6 @@ Allow: /
 # The role-tailored resume variants are near-duplicates of
 # /Mohd_Saif_Resume.pdf; only the canonical one belongs in an index.
 Disallow: /Mohd_Saif_Resume_
+Disallow: /studio
 
 Sitemap: https://saifsiddiqui.in/sitemap-index.xml

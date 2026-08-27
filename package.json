@@ -8,10 +8,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "translate": "node scripts/translate.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "resume": "node scripts/resume.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.82",
+    "@anthropic-ai/sdk": "^0.121.0",
     "@astrojs/mdx": "^4.3.14",
     "@astrojs/react": "^4.4.0",
     "@astrojs/sitemap": "^3.7.3",
