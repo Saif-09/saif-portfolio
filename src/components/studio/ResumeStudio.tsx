@@ -315,6 +315,7 @@ export default function ResumeStudio() {
       setCompileError('');
       setCompileState('queued');
       setElapsed(0);
+      const startedAt = Date.now();
 
       if (clock.current !== null) window.clearInterval(clock.current);
       clock.current = window.setInterval(() => setElapsed((s) => s + 1), 1000);
@@ -334,9 +335,20 @@ export default function ResumeStudio() {
 
       let commitSha = '';
       try {
-        /* Ask for the variant on screen by itself. Four variants is eight
-           pdflatex runs and about four seconds; one is about one. */
+        /* Split the work: the variant on screen alone (one pdflatex pair,
+           about a second) and the other three alongside it. Fired together,
+           not chained, so the thumbnails do not wait out the big preview. */
         const onScreen = tab || variants[0]?.id;
+        const rest = variants.map((v) => v.id).filter((id) => id !== onScreen);
+
+        const restPromise =
+          rest.length > 0
+            ? api('compile', {
+                method: 'POST',
+                body: JSON.stringify({ tex: which, variants: rest }),
+              }).catch(() => null)
+            : null;
+
         const started = await api('compile', {
           method: 'POST',
           body: JSON.stringify({ tex: which, variants: onScreen ? [onScreen] : undefined }),
@@ -348,29 +360,22 @@ export default function ResumeStudio() {
             stop('failed', 'The compile returned no readable PDFs.');
             return;
           }
-          setCompileMs(started.ms ?? null);
+          /* Wall clock, not the compiler's self-reported time: that is what
+             was actually waited through. */
+          setCompileMs(Date.now() - startedAt);
           stop('ready');
 
-          /* Then fill in the thumbnails, so they stop showing the published
-             version while the big preview shows the draft. */
-          const rest = variants.map((v) => v.id).filter((id) => id !== onScreen);
-          if (rest.length > 0) {
-            api('compile', {
-              method: 'POST',
-              body: JSON.stringify({ tex: which, variants: rest }),
-            })
-              .then((more) => {
-                /* Ignore a late answer for source that has since changed. */
-                if (more.mode === 'instant' && more.pdfs) {
-                  adoptInstant(more.pdfs, variants, which, true);
-                }
-              })
-              .catch(() => {
-                /* The thumbnails just stay on the published version. */
-              });
-          }
+          restPromise?.then((more) => {
+            /* Ignore a late answer for source that has since changed. */
+            if (more?.mode === 'instant' && more.pdfs) {
+              adoptInstant(more.pdfs, variants, which, true);
+            }
+          });
           return;
         }
+
+        /* CI fallback: that request compiled nothing, so drop it. */
+        void restPromise;
 
         setCompileMs(null);
         commitSha = started.commitSha ?? '';
@@ -726,7 +731,7 @@ export default function ResumeStudio() {
               ? 'Draft: your editor contents, compiled but not published.'
               : 'Published: what the live URLs serve right now.'}{' '}
             {compileMs !== null
-              ? ` Compiled in ${(compileMs / 1000).toFixed(1)}s.`
+              ? ` Last compile took ${(compileMs / 1000).toFixed(1)}s.`
               : ' A compile takes about a minute unless the compile service is wired up.'}{' '}
             It fails if a variant no longer fits one page.
           </p>
