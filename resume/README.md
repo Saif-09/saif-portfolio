@@ -28,10 +28,37 @@ get, on one screen:
 - the live PDF for each variant, plus a **Compare all** view of all four;
 - a plain-English box: "add a bullet about X", "make the product summary shorter";
 - the raw `resume.tex` if you want to edit it by hand;
-- **Save and publish**, which commits and shows the build going green.
+- **Save and publish**, which commits and shows the build going green;
+- **Compile**, which builds the editor's current source *without* publishing it,
+  and an **auto compile** toggle that does the same 45 seconds after you stop
+  typing;
+- a **Published / Draft** switch, so the two are never confused, with a warning
+  when the draft is older than what is in the editor.
 
 It works on a phone. The AI box is the point there: typing an instruction beats
 editing LaTeX on a touchscreen.
+
+### Why a compile takes about a minute
+
+There is no LaTeX runtime on Vercel, so a draft compiles in CI: the studio
+pushes the source to the `resume-preview` branch, `resume-preview.yml` builds
+every variant and commits the PDFs back, and the studio reads them from there.
+`main` is never touched, so a draft neither publishes nor deploys, and
+`git.deploymentEnabled` in `vercel.json` keeps that branch from building Vercel
+previews. (`[vercel skip]` in the commit message does *not* stop Vercel, and was
+tried first.)
+
+It is a branch push rather than a `workflow_dispatch` because dispatching needs
+a token with Actions write, while pushing needs only the Contents write the
+studio's PAT already has.
+
+The upside of using CI is that a draft goes through `build.sh`, so the same
+one-page gate that decides what gets published also decides whether a draft is
+acceptable: a variant that would spill onto page 2 fails the compile and says
+so, before anything is committed.
+
+Vercel Sandbox would give a few-second compile instead, but it returns 403 for
+this account; in-browser WASM LaTeX is the other route to that.
 
 ### How an AI edit stays safe
 
