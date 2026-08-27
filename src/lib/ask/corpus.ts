@@ -2,12 +2,16 @@
  * RAG-lite corpus for /api/ask.
  *
  * All content is inlined into the function bundle AT BUILD TIME via
- * import.meta.glob(..., '?raw') - the serverless function never touches
- * the filesystem. ~35 chunks at this scale; retrieval is keyword-overlap
- * scoring, which is plenty for 30 notes.
+ * import.meta.glob(..., '?raw') - the serverless function never touches the
+ * filesystem. Documents are cut into sections by chunk.mjs, the same function
+ * scripts/embed-corpus.mjs uses, so chunk ids line up with the vector index.
+ *
+ * Keyword scoring lives on below as the fallback for when no embedding key is
+ * configured; retrieve.ts prefers the vectors.
  */
 import { profile, skills, employers } from '../../data/profile';
 import { projects } from '../../data/projects';
+import { buildDocChunks, stripMarkdown } from './chunk.mjs';
 
 export interface Chunk {
   id: string;
@@ -30,34 +34,6 @@ const workRaw = import.meta.glob('/src/content/work/en/*.mdx', {
 }) as Record<string, string>;
 
 import llmsTxt from '/public/llms.txt?raw';
-
-function slugify(basename: string): string {
-  return basename
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function parseFrontmatter(raw: string): { title: string | null; body: string } {
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n?/);
-  if (!match) return { title: null, body: raw };
-  const titleMatch = match[1].match(/^title:\s*['"]?(.+?)['"]?\s*$/m);
-  return { title: titleMatch?.[1] ?? null, body: raw.slice(match[0].length) };
-}
-
-/** Markdown → readable plain text (rough is fine for retrieval + context). */
-function stripMarkdown(md: string): string {
-  return md
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
-    .replace(/\[\[([^\]]+)\]\]/g, '$1')
-    .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1 ($2)')
-    .replace(/^#{1,6}\s*/gm, '')
-    .replace(/[*_`>]/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
 
 function buildChunks(): Chunk[] {
   const chunks: Chunk[] = [];
@@ -97,28 +73,14 @@ function buildChunks(): Chunk[] {
     text: stripMarkdown(llmsTxt),
   });
 
-  for (const [path, raw] of Object.entries(workRaw)) {
-    const slug = path.split('/').pop()!.replace('.mdx', '');
-    const { title, body } = parseFrontmatter(raw);
-    chunks.push({
-      id: `work-${slug}`,
-      title: title ?? slug,
-      url: `/work/${slug}`,
-      text: stripMarkdown(body),
-    });
-  }
+  /* Section-level chunks, from the same function scripts/embed-corpus.mjs uses,
+     so every id here has a vector there. Sorted to match the script's ordering. */
+  const sources = [
+    ...Object.entries(brainRaw).map(([path, raw]) => ({ kind: 'brain' as const, path, raw })),
+    ...Object.entries(workRaw).map(([path, raw]) => ({ kind: 'work' as const, path, raw })),
+  ].sort((a, b) => a.path.localeCompare(b.path));
 
-  for (const [path, raw] of Object.entries(brainRaw)) {
-    const basename = path.split('/').pop()!.replace('.md', '');
-    const slug = slugify(basename);
-    const { title, body } = parseFrontmatter(raw);
-    chunks.push({
-      id: `brain-${slug}`,
-      title: title ?? basename,
-      url: `/brain/${slug}`,
-      text: stripMarkdown(body),
-    });
-  }
+  chunks.push(...buildDocChunks(sources));
 
   return chunks;
 }

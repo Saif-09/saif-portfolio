@@ -10,7 +10,7 @@
  * Publishing never comes through here. That stays on CI, so the live resume
  * does not depend on this service being up.
  */
-import { env } from './env';
+import { env } from '../env';
 import { VARIANTS } from './variants';
 
 export interface FastCompileResult {

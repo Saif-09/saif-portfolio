@@ -3,7 +3,7 @@ import { guard, json } from '../../../lib/studio/guard';
 import { readTex, GithubError, latestRun } from '../../../lib/studio/github';
 import { VARIANTS } from '../../../lib/studio/variants';
 import { hasAiProvider } from '../../../lib/studio/edit';
-import { env } from '../../../lib/studio/env';
+import { env } from '../../../lib/env';
 
 export const prerender = false;
 

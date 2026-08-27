@@ -29,3 +29,6 @@ resume/out/
 resume/.build/
 # draft compiles: committed only on the resume-preview branch, via git add -f
 resume/preview/
+
+# embedding run cache (embeddings.json is the committed artifact)
+scripts/.embed-cache.json

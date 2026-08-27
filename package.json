@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "translate": "node scripts/translate.mjs",
     "astro": "astro",
-    "resume": "node scripts/resume.mjs"
+    "resume": "node scripts/resume.mjs",
+    "embed": "node scripts/embed-corpus.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.82",

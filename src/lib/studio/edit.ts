@@ -18,7 +18,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { generateObject, jsonSchema } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { VARIANTS, type VariantId } from './variants';
-import { env } from './env';
+import { env } from '../env';
 
 export const MAX_INSTRUCTION_CHARS = 2000;
 export const MAX_TEX_CHARS = 120_000;

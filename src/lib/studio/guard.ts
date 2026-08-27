@@ -7,7 +7,7 @@
  * surface.
  */
 import { timingSafeEqual } from 'node:crypto';
-import { env } from './env';
+import { env } from '../env';
 
 const KEY = () => env('STUDIO_KEY');
 

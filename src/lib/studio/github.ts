@@ -7,7 +7,7 @@
  * Build resume PDFs workflow, which compiles every variant, refuses to publish
  * anything that is not one page, and the resulting commit deploys.
  */
-import { env } from './env';
+import { env } from '../env';
 
 const OWNER = 'Saif-09';
 const REPO = 'saif-portfolio';
