@@ -223,24 +223,17 @@ export async function runAgent(
 
   const cited = new Map<string, string>();
 
-  /* 1. Routing. Best-effort and time-boxed: it is a nice signal, never a
-        dependency, so a cold or missing router must not delay an answer. */
+  /* 1. Routing and the first retrieval, together.
+        The self-hosted classifier takes ~700ms warm, and retrieval takes about
+        the same, so running them in sequence would put the router's whole cost
+        on the visitor's clock for a label that is only ever informational.
+        Started here, awaited below. */
   const routeStart = Date.now();
   emit({ type: 'stage', id: 'route', label: 'Classify the question', status: 'start' });
-  let route: Route;
-  try {
-    route = await classify(question, signal);
-  } catch {
-    route = { label: 'unknown', by: 'unavailable' };
-  }
-  emit({
-    type: 'stage',
-    id: 'route',
-    label: 'Classify the question',
-    status: route.by === 'unavailable' ? 'skip' : 'done',
-    ms: Date.now() - routeStart,
-    detail: { label: route.label, by: route.by, model: route.model, note: route.note },
-  });
+  const routePromise: Promise<Route> = classify(question, signal).catch(() => ({
+    label: 'unknown' as const,
+    by: 'unavailable' as const,
+  }));
 
   /* 2. First retrieval, before the model runs. The agent can search again with
         its own wording, but starting from nothing wastes a whole step. */
@@ -274,6 +267,18 @@ export async function runAgent(
           score: Number(hit.score.toFixed(3)),
         })),
     },
+  });
+
+  const route = await routePromise;
+  emit({
+    type: 'stage',
+    id: 'route',
+    label: 'Classify the question',
+    status: route.by === 'unavailable' ? 'skip' : 'done',
+    /* Wall time from when it was started, even though it overlapped retrieval:
+       the alternative is implying it was free, and it was not, it was hidden. */
+    ms: Date.now() - routeStart,
+    detail: { label: route.label, by: route.by, model: route.model, note: route.note },
   });
 
   const context = seeded.hits

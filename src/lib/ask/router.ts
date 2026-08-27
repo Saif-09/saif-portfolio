@@ -102,3 +102,23 @@ export async function classify(question: string, signal?: AbortSignal): Promise<
 
   return { label: heuristic(question), by: 'heuristic', note: 'no router configured' };
 }
+
+/**
+ * Ask the router service to load its model, without waiting for an answer.
+ * Cheap enough to fire on page view, which is what makes the cold start
+ * invisible in practice.
+ */
+export async function warmRouter(): Promise<boolean> {
+  const url = env('ROUTER_URL').replace(/\/$/, '');
+  if (!url) return false;
+  try {
+    const res = await fetch(`${url}/health`, {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { ready?: boolean };
+    return Boolean(data.ready);
+  } catch {
+    return false;
+  }
+}

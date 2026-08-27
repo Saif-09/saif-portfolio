@@ -1,4 +1,4 @@
-import { Fragment, useId, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { emitTrack } from '../../lib/track/emit';
 
 export interface AskStrings {
@@ -122,6 +122,13 @@ export default function AskWidget({ t }: { t: AskStrings }) {
   const abortRef = useRef<AbortController | null>(null);
 
   const busy = status === 'loading' || status === 'streaming';
+
+  /* The classifier runs on a scale-to-zero service, so nudge it awake as soon
+     as this widget exists. By the time anyone has typed a question the model is
+     loaded, and the trace shows the real thing instead of the fallback. */
+  useEffect(() => {
+    fetch('/api/ask?warm=1').catch(() => {});
+  }, []);
 
   /** Stages upsert by id so a "start" row becomes its own "done" row. */
   function upsert(step: Step) {

@@ -11,6 +11,7 @@
  */
 import type { APIRoute } from 'astro';
 import { runAgent, agentAvailable, MAX_QUESTION_CHARS, type TraceEvent } from '../../lib/ask/agent';
+import { warmRouter, routerConfigured } from '../../lib/ask/router';
 
 export const prerender = false;
 
@@ -115,4 +116,18 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   });
 };
 
-export const GET: APIRoute = () => json({ error: 'method_not_allowed' }, 405);
+/**
+ * GET ?warm=1 nudges the self-hosted router awake.
+ *
+ * It runs on Cloud Run with min-instances 0, so the first question of the day
+ * would otherwise arrive while the model is still loading and fall back to the
+ * keyword heuristic. The widget fires this when it scrolls into view, which is
+ * several seconds before anyone finishes typing.
+ */
+export const GET: APIRoute = async ({ request }) => {
+  if (new URL(request.url).searchParams.get('warm') !== '1') {
+    return json({ error: 'method_not_allowed' }, 405);
+  }
+  if (!routerConfigured()) return json({ warmed: false, reason: 'no router configured' }, 200);
+  return json({ warmed: await warmRouter() }, 200);
+};
