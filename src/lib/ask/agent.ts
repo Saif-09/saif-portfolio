@@ -398,9 +398,15 @@ export async function runAgent(
     ms: Date.now() - t0,
     steps,
     usage,
+    /* Paths the answer actually names come first: everything retrieved was
+       "consulted", but listing all of it under the answer implies the answer
+       used it, which is a small dishonesty that adds up. */
     citations: [...cited.entries()]
       .filter(([url]) => url && url !== '/')
-      .map(([url, title]) => ({ url, title })),
+      .map(([url, title]) => ({ url, title, used: answered.includes(url) }))
+      .sort((a, b) => Number(b.used) - Number(a.used))
+      .slice(0, 4)
+      .map(({ url, title }) => ({ url, title })),
   });
 }
 

@@ -834,6 +834,161 @@ html:not(.lenis) [data-split] * {
   min-block-size: 3.5rem;
 }
 
+/* ---------------------------------------------------- ask: pipeline trace */
+/* The visible record of how an answer was produced. Every number rendered here
+   is measured server-side, so this is documentation, not decoration. */
+
+.ask-trace {
+  margin-block-start: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background-color: var(--surface);
+  overflow: hidden;
+}
+
+.ask-trace-toggle {
+  inline-size: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: start;
+}
+
+.ask-trace-summary {
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ask-steps {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ask-step {
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--line);
+  font-size: var(--text-small);
+}
+
+.ask-step.is-skip {
+  opacity: 0.55;
+}
+
+.ask-step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.ask-step-label {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.ask-step-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  text-align: end;
+}
+
+.ask-step-ms {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A stage that has started but not finished. */
+.ask-step-live {
+  inline-size: 0.5em;
+  block-size: 0.5em;
+  border-radius: 50%;
+  background-color: var(--accent);
+  animation: ask-pulse 1s ease-in-out infinite;
+}
+
+@keyframes ask-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-step-live {
+    animation: none;
+  }
+}
+
+.ask-hits {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.ask-hits li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.ask-hit-score {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  flex: none;
+}
+
+.ask-hits a {
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ask-hits a:hover {
+  text-decoration: underline;
+}
+
+.ask-step-note {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+}
+
+.ask-cites {
+  margin: var(--space-4) 0 0;
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--line);
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-small);
+}
+
+.ask-cites a {
+  color: var(--muted);
+}
+
 .ask-card {
   border: 1px solid var(--line);
   border-radius: 16px;
