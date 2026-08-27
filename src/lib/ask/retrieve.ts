@@ -121,7 +121,11 @@ export async function search(
         .sort((a, b) => b.score - a.score);
 
       const hits: Hit[] = facts ? [{ chunk: facts, score: 1 }] : [];
-      let total = facts?.text.length ?? 0;
+      /* The budget covers RETRIEVED chunks only. Counting the mandatory facts
+         block against it made it self-defeating: facts is 6.5k characters, so
+         it consumed the whole allowance and every actual search result was
+         skipped, leaving the agent to answer from the identity block alone. */
+      let total = 0;
       for (const hit of scored) {
         if (hits.length >= topK) break;
         if (total + hit.chunk.text.length > maxChars) continue;

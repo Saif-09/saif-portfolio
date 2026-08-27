@@ -38,15 +38,13 @@ import llmsTxt from '/public/llms.txt?raw';
 function buildChunks(): Chunk[] {
   const chunks: Chunk[] = [];
 
-  /* Core facts - always included in context, whatever the question. */
-  const roleLabel = (role: string) =>
-    role === 'built-0-1' ? 'built 0→1 (from scratch)' : 'contributed';
-  const projectLines = projects
-    .map(
-      (p) =>
-        `- ${p.name} (${p.track}, ${roleLabel(p.role)}${p.featured ? `, full case study at /work/${p.id}` : ''}): ${p.summary} Scope: ${p.scope}. Links: ${p.links.map((l) => `${l.label} ${l.href}`).join(', ')}`,
-    )
-    .join('\n');
+  /* Identity only, and deliberately small.
+     This block is prepended to every request, so anything in it is context the
+     visitor pays for on every question. It used to carry the full project list
+     and every skill category (6.5k characters), which had two costs: ~1600
+     wasted tokens per turn, and an agent that never called a tool because the
+     answer was always already in front of it. Details now live behind
+     list_projects and get_profile, which is what tools are for. */
   chunks.push({
     id: 'facts',
     title: 'Core facts about Mohd Saif',
@@ -54,15 +52,8 @@ function buildChunks(): Chunk[] {
     text: [
       `Mohd Saif is a Product Engineer with ${profile.yearsExperience} years of experience. Positioning: "${profile.positioning}"`,
       `He has built and shipped products at: ${employers.join(', ')}.`,
-      `Founding-engineer fit: Mohd is a strong fit for a founding engineer role. He defaults to 0→1 (multiple products taken from empty repo to the App Store and Play Store), covers the whole stack (design, iOS, Android, web, and backends), makes product decisions alongside the code, ships fast using AI as leverage, wires up the essentials a young product needs (payments, subscriptions, analytics, deep linking), and biases to production: ship, measure, iterate.`,
-      `Core stack: ${skills.coreStack.join(', ')}. He is tool-agnostic and outcome-first, with strong applied-AI skills, and ships mobile apps, web products, and the backends behind them, end to end.`,
-      `Payments and monetization: ${skills.payments.join(', ')}.`,
-      `Named performance and delivery techniques: ${skills.performance.join(', ')}.`,
-      `Analytics, growth, and tooling: ${skills.analyticsAndTooling.join(', ')}.`,
       `Contact: email ${profile.email}, GitHub ${profile.github}, LinkedIn ${profile.linkedin}, résumé ${profile.resumeUrl}. There is also a contact form on the homepage (#contact).`,
-      `Projects that were built 0→1 (from zero): ${projects.filter((p) => p.role === 'built-0-1').map((p) => p.name).join(', ')}.`,
-      `Projects he contributed to: ${projects.filter((p) => p.role === 'contributed').map((p) => p.name).join(', ')}.`,
-      `All projects:\n${projectLines}`,
+      `The full decision log is at /brain and the case studies at /work. For the project list use the list_projects tool; for skills, employers or experience use get_profile; for anything about how something was built or why, use search_corpus.`,
     ].join('\n\n'),
   });
 
@@ -121,7 +112,9 @@ export function retrieve(question: string, maxChunks = 6, maxChars = 7000): Chun
     .sort((a, b) => b.score - a.score);
 
   const picked: Chunk[] = [CHUNKS.find((c) => c.id === 'facts')!];
-  let total = picked[0].text.length;
+  /* Budget the retrieved chunks only; facts is mandatory and larger than any
+     sensible allowance, so charging it here would starve the results. */
+  let total = 0;
   for (const { chunk } of scored) {
     if (picked.length >= maxChunks) break;
     if (total + chunk.text.length > maxChars) continue;
