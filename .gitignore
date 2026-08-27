@@ -27,3 +27,5 @@ _shot.mjs
 # resume build artefacts (the published PDFs live in public/)
 resume/out/
 resume/.build/
+# draft compiles: committed only on the resume-preview branch, via git add -f
+resume/preview/

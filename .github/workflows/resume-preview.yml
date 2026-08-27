@@ -1,0 +1,65 @@
+# Draft compile for the studio's Compile button. Never touches main.
+#
+# The studio commits the in-progress resume.tex to the resume-preview branch;
+# that push lands here. This builds every variant and commits the PDFs back to
+# the same branch, where the studio reads them. Nothing is published.
+#
+# build.sh still gates on one page, so a draft that would spill onto page 2
+# fails the run and the studio can say so BEFORE anything is published.
+#
+# Why a branch push and not workflow_dispatch: triggering a dispatch needs a
+# token with Actions write, while pushing needs only Contents write, which is
+# all the studio's PAT is granted.
+name: Compile resume preview
+
+on:
+  push:
+    branches: [resume-preview]
+    # Only the source triggers a build. The PDFs this workflow commits back are
+    # not in this list, so it cannot retrigger itself.
+    paths:
+      - 'resume/resume.tex'
+
+permissions:
+  contents: write
+
+# A newer draft makes an in-flight one pointless.
+concurrency:
+  group: resume-preview
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: resume-preview
+
+      - name: Build all variants
+        run: |
+          docker run --rm -v "$PWD:$PWD" -w "$PWD" \
+            ghcr.io/xu-cheng/texlive-full:latest \
+            bash resume/build.sh
+
+      - name: Fix ownership
+        run: sudo chown -R "$(id -u):$(id -g)" resume/out resume/.build
+
+      # Committed to the branch rather than uploaded as an artifact so the
+      # studio can read them with Contents access alone, no zip handling.
+      - name: Commit the preview PDFs
+        run: |
+          mkdir -p resume/preview
+          cp resume/out/*.pdf resume/preview/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f resume/preview/*.pdf
+          if git diff --quiet --cached; then
+            echo "preview PDFs unchanged"
+          else
+            # [vercel skip] keeps this branch from burning a preview deployment
+            # on every compile. GitHub Actions does not honour that keyword, so
+            # it does not interfere with this workflow.
+            git commit -m "Preview PDFs [vercel skip]"
+            git push origin resume-preview
+          fi

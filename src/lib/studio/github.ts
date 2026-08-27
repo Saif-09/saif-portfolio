@@ -154,3 +154,106 @@ export async function latestRun(): Promise<RunStatus> {
     title: run.display_title ?? null,
   };
 }
+
+/* ------------------------------------------------------- draft compiles */
+
+/**
+ * The studio's Compile button works by pushing the in-progress source to this
+ * branch, which triggers resume-preview.yml. Nothing here reaches main, so a
+ * draft is never published and never deploys.
+ */
+export const PREVIEW_BRANCH = 'resume-preview';
+const PREVIEW_WORKFLOW = 'resume-preview.yml';
+const PREVIEW_DIR = 'resume/preview';
+
+/** Create the preview branch off main the first time it is needed. */
+async function ensurePreviewBranch(): Promise<void> {
+  try {
+    await gh(`/repos/${OWNER}/${REPO}/git/ref/heads/${PREVIEW_BRANCH}`);
+    return;
+  } catch (err) {
+    if (!(err instanceof GithubError) || err.status !== 404) throw err;
+  }
+
+  const main = await gh(`/repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}`);
+  await gh(`/repos/${OWNER}/${REPO}/git/refs`, {
+    method: 'POST',
+    body: JSON.stringify({
+      ref: `refs/heads/${PREVIEW_BRANCH}`,
+      sha: main.object.sha,
+    }),
+  });
+}
+
+/**
+ * Push a draft to the preview branch. Returns the commit that CI will build.
+ * The branch is force-updated to whatever the studio last sent, so drafts do
+ * not need to be based on each other.
+ */
+export async function pushDraft(tex: string): Promise<{ commitSha: string }> {
+  await ensurePreviewBranch();
+
+  /* The write needs the file's current blob sha ON THIS BRANCH. */
+  let sha: string | undefined;
+  try {
+    const existing = await gh(
+      `/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(TEX_PATH)}?ref=${PREVIEW_BRANCH}`,
+    );
+    sha = existing.sha;
+  } catch (err) {
+    if (!(err instanceof GithubError) || err.status !== 404) throw err;
+  }
+
+  const data = await gh(`/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(TEX_PATH)}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      /* [vercel skip] so a draft does not burn a preview deployment. GitHub
+         Actions ignores that keyword, so the compile still runs. */
+      message: 'Draft compile from the studio [vercel skip]',
+      content: Buffer.from(tex, 'utf8').toString('base64'),
+      branch: PREVIEW_BRANCH,
+      ...(sha ? { sha } : {}),
+    }),
+  });
+
+  return { commitSha: data.commit?.sha ?? '' };
+}
+
+/** Status of the draft compile. */
+export async function latestPreviewRun(): Promise<RunStatus> {
+  const data = await gh(
+    `/repos/${OWNER}/${REPO}/actions/workflows/${PREVIEW_WORKFLOW}/runs?per_page=1`,
+  );
+  const run = data.workflow_runs?.[0];
+  if (!run) {
+    return {
+      id: null,
+      status: null,
+      conclusion: null,
+      url: null,
+      startedAt: null,
+      headSha: null,
+      title: null,
+    };
+  }
+  return {
+    id: run.id,
+    status: run.status ?? null,
+    conclusion: run.conclusion ?? null,
+    url: run.html_url ?? null,
+    startedAt: run.run_started_at ?? run.created_at ?? null,
+    headSha: run.head_sha ?? null,
+    title: run.display_title ?? null,
+  };
+}
+
+/** One freshly compiled draft PDF, straight off the preview branch. */
+export async function readPreviewPdf(filename: string): Promise<Buffer> {
+  const data = await gh(
+    `/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(`${PREVIEW_DIR}/${filename}`)}?ref=${PREVIEW_BRANCH}`,
+  );
+  if (typeof data.content !== 'string') {
+    throw new GithubError(`${filename} came back without content`, 502);
+  }
+  return Buffer.from(data.content, 'base64');
+}
