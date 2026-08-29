@@ -86,6 +86,104 @@ export function applyAvailable(): boolean {
   return Boolean(apiKey());
 }
 
+/** Strip a fetched page down to the text a job post actually consists of. */
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<\/(p|div|li|h[1-6]|br|tr)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Fetch a job posting by URL.
+ *
+ * Plenty of boards will not serve this: LinkedIn, Indeed and Workday put job
+ * pages behind a login or a bot check. That is not a bug to work around, it is
+ * a fact to report, so the error says to screenshot it instead rather than
+ * leaving someone staring at a spinner.
+ */
+export async function fetchPost(url: string): Promise<string> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('That does not look like a URL.');
+  }
+  if (!/^https?:$/.test(parsed.protocol)) {
+    throw new Error('Only http and https links work here.');
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(parsed.toString(), {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(15_000),
+      headers: {
+        /* Asking as a browser: many career pages serve an empty shell to
+           anything that does not look like one. */
+        'user-agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+        accept: 'text/html,application/xhtml+xml',
+        'accept-language': 'en',
+      },
+    });
+  } catch {
+    throw new Error('That page did not respond. Screenshot it instead.');
+  }
+
+  if (!res.ok) {
+    throw new Error(
+      res.status === 403 || res.status === 401
+        ? 'That site blocks reading the page directly, which LinkedIn and Workday both do. Screenshot it instead.'
+        : `That page returned ${res.status}. Screenshot it instead.`,
+    );
+  }
+
+  const text = htmlToText(await res.text());
+  if (text.length < 200) {
+    throw new Error(
+      'That page came back nearly empty, usually because it renders with JavaScript or wants a login. Screenshot it instead.',
+    );
+  }
+  return text.slice(0, 20_000);
+}
+
+/** Same extraction, from text rather than pixels. */
+export async function extractText(
+  text: string,
+): Promise<{ extraction: Extraction; model: string; ms: number }> {
+  const key = apiKey();
+  if (!key) throw new Error('No model key is configured on the server.');
+  const google = createGoogleGenerativeAI({ apiKey: key });
+
+  let lastError = '';
+  for (const model of MODELS) {
+    const started = Date.now();
+    try {
+      const result = await generateObject({
+        model: google(model),
+        schema: EXTRACTION_SCHEMA,
+        prompt: `${EXTRACT_PROMPT}\n\nTHE POST:\n\n${text}`,
+      });
+      return { extraction: result.object, model, ms: Date.now() - started };
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
+    }
+  }
+  throw new Error(lastError || 'Could not read that post.');
+}
+
 export async function extractPost(
   image: Buffer,
   hint?: string,

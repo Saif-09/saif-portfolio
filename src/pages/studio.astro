@@ -153,6 +153,117 @@ import StudioApp from '../components/studio/StudioApp';
         gap: var(--space-3);
       }
 
+      /* The empty state IS the interface here, so it gets the whole width and
+         says what to do. A lone button in the corner of a black page reads as
+         a broken screen. */
+      .apply-intake {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding-block: clamp(var(--space-6), 6vh, var(--space-16));
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      .apply-drop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-block-size: 34vh;
+        padding: var(--space-8);
+        border: 1px dashed var(--line);
+        border-radius: 16px;
+        background: var(--surface);
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .apply-drop:hover,
+      .apply-drop:focus-visible,
+      .apply-drop.is-dragging {
+        border-color: var(--ink);
+        border-style: solid;
+      }
+
+      .apply-drop.is-busy {
+        cursor: progress;
+        border-color: var(--accent);
+      }
+
+      .apply-drop-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+        color: var(--ink);
+      }
+
+      .apply-drop-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: var(--text-small);
+      }
+
+      .apply-or {
+        margin: 0;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .apply-url {
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      .apply .apply-url input {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .apply-hint {
+        margin: 0;
+        text-align: center;
+      }
+
+      .apply-paste summary {
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .apply-paste textarea {
+        inline-size: 100%;
+        margin-block: var(--space-3) var(--space-2);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        padding: var(--space-2) var(--space-3);
+        resize: vertical;
+      }
+
+      .apply-paste button {
+        inline-size: 100%;
+      }
+
       .apply .apply-overdue {
         font-family: var(--font-mono);
         font-size: var(--text-mono);

@@ -1,9 +1,10 @@
 /**
- * Apply: a job-post screenshot becomes a ready-to-send email, from a phone.
+ * Apply: a job post becomes a ready-to-send email.
  *
- * The whole point is the gap between seeing a post and having applied. On a
- * phone that gap is where applications die, so this is built for one thumb:
- * take the screenshot, open this, tap once, review, send.
+ * A post arrives in three shapes and the panel takes all three, because
+ * insisting on a screenshot while you are looking at a careers page on a laptop
+ * is exactly the friction that stops a tool being used: drop or paste a
+ * screenshot, paste a link, or paste the text.
  *
  * Logging is a separate tap on purpose. A draft you decide against should leave
  * no trace, and a log full of things you never sent is worse than no log.
@@ -63,6 +64,10 @@ export default function ApplyPanel() {
   const [subject, setSubject] = useState('');
   const [refused, setRefused] = useState('');
 
+  const [url, setUrl] = useState('');
+  const [pasted, setPasted] = useState('');
+  const [dragging, setDragging] = useState(false);
+
   const [log, setLog] = useState<Application[]>([]);
   const [overdue, setOverdue] = useState<Application[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -86,7 +91,12 @@ export default function ApplyPanel() {
         headers: { 'x-studio-key': key, ...(init.headers ?? {}) },
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw Object.assign(new Error(data?.error ?? `Failed (${res.status})`), { data, status: res.status });
+      if (!res.ok) {
+        throw Object.assign(new Error(data?.error ?? `Failed (${res.status})`), {
+          data,
+          status: res.status,
+        });
+      }
       return data;
     },
     [key],
@@ -107,53 +117,109 @@ export default function ApplyPanel() {
     loadLog();
   }, [loadLog]);
 
-  async function onFile(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  /* -------------------------------------------------------------- intake */
 
-    setError('');
-    setNotice('');
-    setRefused('');
-    setExtraction(null);
-    setDraft(null);
-    setBusy('reading');
-
-    if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
-    objectUrl.current = URL.createObjectURL(file);
-    setPreview(objectUrl.current);
-
-    try {
-      /* Raw bytes, not FormData: Astro refuses form content types on
-         on-demand routes as CSRF, even same-origin. */
-      const data = await api('extract', {
-        method: 'POST',
-        headers: { 'content-type': file.type || 'image/png' },
-        body: file,
-      });
-
-      setExtraction(data.extraction);
-      if (data.refused) {
-        setRefused(data.refused);
-      } else if (data.draft) {
-        setDraft(data.draft);
-        setBody(data.draft.body);
-        setSubject(data.draft.subject);
-      }
-      if (!data.answersLoaded) {
-        setNotice('No answers file on the server yet. Run `npm run answers` for a better draft.');
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy('');
+  const receive = useCallback((data: any) => {
+    setExtraction(data.extraction);
+    if (data.refused) {
+      setRefused(data.refused);
+    } else if (data.draft) {
+      setDraft(data.draft);
+      setBody(data.draft.body);
+      setSubject(data.draft.subject);
     }
-  }
+    if (!data.answersLoaded) {
+      setNotice('No answers on the server yet. Run `npm run answers` for a fuller draft.');
+    }
+  }, []);
+
+  const readImage = useCallback(
+    async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        setError('That is not an image.');
+        return;
+      }
+      setError('');
+      setNotice('');
+      setRefused('');
+      setExtraction(null);
+      setDraft(null);
+      setBusy('reading');
+
+      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      objectUrl.current = URL.createObjectURL(file);
+      setPreview(objectUrl.current);
+
+      try {
+        /* Raw bytes, not FormData: Astro refuses form content types on
+           on-demand routes as CSRF, even same-origin. */
+        receive(
+          await api('extract', {
+            method: 'POST',
+            headers: { 'content-type': file.type || 'image/png' },
+            body: file,
+          }),
+        );
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setBusy('');
+      }
+    },
+    [api, receive],
+  );
+
+  const readSource = useCallback(
+    async (payload: { url?: string; text?: string }) => {
+      setError('');
+      setNotice('');
+      setRefused('');
+      setExtraction(null);
+      setDraft(null);
+      setPreview(null);
+      setBusy('reading');
+      try {
+        receive(
+          await api('extract', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+        );
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setBusy('');
+      }
+    },
+    [api, receive],
+  );
+
+  /* Paste a screenshot straight in. On a laptop that is the fastest route:
+     no file dialog, no saving to disk first. */
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
+      const file = [...(event.clipboardData?.items ?? [])]
+        .find((item) => item.type.startsWith('image/'))
+        ?.getAsFile();
+      if (file) {
+        event.preventDefault();
+        readImage(file);
+      }
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [readImage]);
+
+  /* ------------------------------------------------------------ outbound */
 
   const mailto = () => {
     if (!draft) return '#';
     /* The address is NOT percent-encoded: encodeURIComponent turns @ into %40
-       and some mail clients then open with an empty To field. Instead it is
-       filtered down to characters legal in an address, which also closes the
+       and some mail clients then open with an empty To field. Filtered to
+       characters legal in an address instead, which also closes the
        header-injection route a raw value would open. */
     const to = (draft.to || '').replace(/[^A-Za-z0-9@._%+-]/g, '');
     return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -179,11 +245,13 @@ export default function ApplyPanel() {
         body: JSON.stringify({
           company: extraction.company || 'Unknown company',
           role: extraction.role || 'Unknown role',
-          source: 'linkedin',
+          source: url ? 'link' : 'screenshot',
           howToApply: extraction.howToApply,
           contact: extraction.contactEmail || extraction.formUrl,
           variant: draft?.variant,
-          notes: extraction.requiredSubject ? `subject must be: ${extraction.requiredSubject}` : null,
+          notes: extraction.requiredSubject
+            ? `subject must be: ${extraction.requiredSubject}`
+            : null,
           draft: body,
           status,
         }),
@@ -211,6 +279,17 @@ export default function ApplyPanel() {
     }
   }
 
+  function startOver() {
+    setExtraction(null);
+    setDraft(null);
+    setPreview(null);
+    setError('');
+    setNotice('');
+    setRefused('');
+    setUrl('');
+    setPasted('');
+  }
+
   if (!key) {
     return (
       <p className="studio-muted">
@@ -219,132 +298,215 @@ export default function ApplyPanel() {
     );
   }
 
+  const reading = busy === 'reading';
+  const hasResult = Boolean(extraction);
+
   return (
     <div className="apply">
-      <div className="apply-actions">
-        <button type="button" onClick={() => fileRef.current?.click()} disabled={busy !== ''}>
-          {busy === 'reading' ? 'Reading the post…' : 'Add a screenshot'}
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          onChange={onFile}
-          hidden
-        />
-        {overdue.length > 0 && (
-          <span className="apply-overdue">
-            {overdue.length} need a follow-up
-          </span>
-        )}
-      </div>
+      {!hasResult && (
+        <section className="apply-intake">
+          <div
+            className={`apply-drop ${dragging ? 'is-dragging' : ''} ${reading ? 'is-busy' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) readImage(file);
+            }}
+            onClick={() => !reading && fileRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
+            }}
+          >
+            <p className="apply-drop-title">
+              {reading ? 'Reading the post…' : 'Drop a screenshot of the job post'}
+            </p>
+            <p className="apply-drop-sub">
+              {reading
+                ? 'Extracting the facts, then drafting.'
+                : 'Or paste one, or tap to choose a file'}
+            </p>
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) readImage(file);
+              e.target.value = '';
+            }}
+            hidden
+          />
 
-      {error && <p className="studio-error">{error}</p>}
-      {notice && <p className="studio-ok">{notice}</p>}
+          <p className="apply-or">or</p>
 
-      <div className="apply-grid">
-        <section className="apply-col">
-          {preview && <img className="apply-shot" src={preview} alt="The job post" />}
+          <form
+            className="apply-url"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (url.trim()) readSource({ url: url.trim() });
+            }}
+          >
+            <label className="sr-only" htmlFor="apply-url">
+              Job posting link
+            </label>
+            <input
+              id="apply-url"
+              type="url"
+              inputMode="url"
+              placeholder="Paste a link to the job posting"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              disabled={reading}
+            />
+            <button type="submit" disabled={reading || !url.trim()}>
+              Read it
+            </button>
+          </form>
+          <p className="studio-muted apply-hint">
+            LinkedIn and Workday block reading their pages directly. Screenshot those.
+          </p>
 
-          {extraction && (
-            <dl className="apply-facts">
-              {(
-                [
-                  ['Company', extraction.company],
-                  ['Role', extraction.role],
-                  ['Location', extraction.location],
-                  ['They ask for', extraction.yearsAsked && `${extraction.yearsAsked} years`],
-                  ['Apply via', extraction.contactEmail || extraction.formUrl || extraction.howToApply],
-                  ['Subject must be', extraction.requiredSubject],
-                  ['Deadline', extraction.deadline],
-                  ['Salary', extraction.salary],
-                ] as [string, string][]
-              )
-                .filter(([, value]) => value)
-                .map(([label, value]) => (
-                  <div key={label}>
-                    <dt>{label}</dt>
-                    <dd>{value}</dd>
+          <details className="apply-paste">
+            <summary>Or paste the job text</summary>
+            <textarea
+              value={pasted}
+              onChange={(e) => setPasted(e.target.value)}
+              placeholder="Paste the job description here"
+              rows={6}
+            />
+            <button
+              type="button"
+              onClick={() => pasted.trim() && readSource({ text: pasted.trim() })}
+              disabled={reading || !pasted.trim()}
+            >
+              Read it
+            </button>
+          </details>
+        </section>
+      )}
+
+      {(error || notice) && (
+        <p className={error ? 'studio-error' : 'studio-ok'}>{error || notice}</p>
+      )}
+
+      {hasResult && extraction && (
+        <>
+          <div className="apply-actions">
+            <button type="button" className="studio-ghost" onClick={startOver}>
+              New post
+            </button>
+            {overdue.length > 0 && (
+              <span className="apply-overdue">{overdue.length} need a follow-up</span>
+            )}
+          </div>
+
+          <div className="apply-grid">
+            <section className="apply-col">
+              {preview && <img className="apply-shot" src={preview} alt="The job post" />}
+
+              <dl className="apply-facts">
+                {(
+                  [
+                    ['Company', extraction.company],
+                    ['Role', extraction.role],
+                    ['Location', extraction.location],
+                    ['They ask for', extraction.yearsAsked && `${extraction.yearsAsked} years`],
+                    [
+                      'Apply via',
+                      extraction.contactEmail || extraction.formUrl || extraction.howToApply,
+                    ],
+                    ['Subject must be', extraction.requiredSubject],
+                    ['Deadline', extraction.deadline],
+                    ['Salary', extraction.salary],
+                  ] as [string, string][]
+                )
+                  .filter(([, value]) => value)
+                  .map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+              </dl>
+
+              {extraction.notVisible.length > 0 && (
+                <p className="studio-muted">
+                  Not in the post: {extraction.notVisible.join(', ')}. Nothing was guessed.
+                </p>
+              )}
+
+              {extraction.mustHaves.length > 0 && (
+                <ul className="apply-musts" role="list">
+                  {extraction.mustHaves.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="apply-col">
+              {refused && <p className="studio-error">Not drafting this one: {refused}</p>}
+
+              {draft && (
+                <>
+                  <p className="studio-muted">
+                    Sending the <strong>{draft.variant}</strong> resume, because {draft.variantWhy}.
+                  </p>
+
+                  <label className="studio-source-label" htmlFor="apply-subject">
+                    Subject
+                  </label>
+                  <input
+                    id="apply-subject"
+                    className="apply-subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                  />
+
+                  <label className="studio-source-label" htmlFor="apply-body">
+                    To {draft.to || '(no address in the post)'}
+                  </label>
+                  <textarea
+                    id="apply-body"
+                    className="apply-body"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+
+                  <div className="apply-send">
+                    <a className="apply-primary" href={mailto()}>
+                      Open in Mail
+                    </a>
+                    <button type="button" className="studio-ghost" onClick={copyBody}>
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      className="studio-ghost"
+                      onClick={() => logIt('drafted')}
+                      disabled={busy !== ''}
+                    >
+                      Log as drafted
+                    </button>
+                    <button type="button" onClick={() => logIt('sent')} disabled={busy !== ''}>
+                      Log as sent
+                    </button>
                   </div>
-                ))}
-            </dl>
-          )}
-
-          {extraction && extraction.notVisible.length > 0 && (
-            <p className="studio-muted">
-              Not in the post: {extraction.notVisible.join(', ')}. Nothing was guessed.
-            </p>
-          )}
-
-          {extraction && extraction.mustHaves.length > 0 && (
-            <ul className="apply-musts" role="list">
-              {extraction.mustHaves.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="apply-col">
-          {refused && (
-            <p className="studio-error">
-              Not drafting this one: {refused}
-            </p>
-          )}
-
-          {draft && (
-            <>
-              <p className="studio-muted">
-                Sending the <strong>{draft.variant}</strong> resume, because {draft.variantWhy}.
-              </p>
-
-              <label className="studio-source-label" htmlFor="apply-subject">
-                Subject
-              </label>
-              <input
-                id="apply-subject"
-                className="apply-subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-
-              <label className="studio-source-label" htmlFor="apply-body">
-                To {draft.to || '(no address in the post)'}
-              </label>
-              <textarea
-                id="apply-body"
-                className="apply-body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-              />
-
-              <div className="apply-send">
-                <a className="apply-primary" href={mailto()}>
-                  Open in Mail
-                </a>
-                <button type="button" className="studio-ghost" onClick={copyBody}>
-                  Copy
-                </button>
-                <button
-                  type="button"
-                  className="studio-ghost"
-                  onClick={() => logIt('drafted')}
-                  disabled={busy !== ''}
-                >
-                  Log as drafted
-                </button>
-                <button
-                  type="button"
-                  onClick={() => logIt('sent')}
-                  disabled={busy !== ''}
-                >
-                  Log as sent
-                </button>
-              </div>
-            </>
-          )}
-        </section>
-      </div>
+                </>
+              )}
+            </section>
+          </div>
+        </>
+      )}
 
       {log.length > 0 && (
         <section className="apply-log">
