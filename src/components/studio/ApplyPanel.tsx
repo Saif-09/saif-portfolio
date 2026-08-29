@@ -10,6 +10,7 @@
  * no trace, and a log full of things you never sent is worse than no log.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import CopyDetails from './CopyDetails';
 
 interface Extraction {
   company: string;
@@ -56,6 +57,7 @@ const STATUSES = ['drafted', 'sent', 'replied', 'interviewing', 'rejected', 'gho
 
 export default function ApplyPanel() {
   const [key, setKey] = useState('');
+  const [answers, setAnswers] = useState<Record<string, any> | null>(null);
   const [busy, setBusy] = useState<'' | 'reading' | 'logging'>('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -119,6 +121,21 @@ export default function ApplyPanel() {
   useEffect(() => {
     loadLog();
   }, [loadLog]);
+
+  /* The public links render without this, so a failure here is not worth a
+     message: it costs the phone number and the notice period, not the panel. */
+  useEffect(() => {
+    if (!key) return;
+    let live = true;
+    api('answers')
+      .then((data) => {
+        if (live) setAnswers(data.answers ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [api, key]);
 
   /* -------------------------------------------------------------- intake */
 
@@ -306,6 +323,11 @@ export default function ApplyPanel() {
 
   return (
     <div className="apply">
+      {/* Above the intake on purpose. Half the reason to open this on a phone
+          is not to draft anything, it is to grab one value for a form that is
+          already open in another tab. */}
+      <CopyDetails answers={answers} />
+
       {!hasResult && (
         <section className="apply-intake">
           <div

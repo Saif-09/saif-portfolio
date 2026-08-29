@@ -176,6 +176,117 @@ import StudioApp from '../components/studio/StudioApp';
         gap: var(--space-3);
       }
 
+      /* ------------------------------------------------- copyable details */
+      /* Closed by default: this is a reference, not the job. One tap opens it,
+         and it sits above the intake because grabbing one value for a form
+         already open elsewhere is half of why this page gets opened at all. */
+
+      .apply-details {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .apply-details > summary {
+        padding: var(--space-2) var(--space-3);
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .apply-details > summary .studio-muted {
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      .apply-detailsbody {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: 0 var(--space-3) var(--space-3);
+      }
+
+      .apply-copygroup h4 {
+        margin: 0 0 var(--space-1);
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+
+      .apply-copyrow {
+        display: grid;
+        grid-template-columns: minmax(6rem, 9rem) minmax(0, 1fr) auto;
+        align-items: baseline;
+        gap: var(--space-2);
+        padding-block: 0.3rem;
+        border-block-start: 1px solid var(--line);
+      }
+
+      .apply-copylabel {
+        font-size: var(--text-small);
+        color: var(--muted);
+      }
+
+      /* One line, clipped. The whole value goes to the clipboard either way,
+         and a wrapped URL turns the list into a wall. */
+      .apply-copyvalue {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* A paragraph answer is the thing you want to read before pasting it. */
+      .apply-copyrow.is-long {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .apply-copyrow.is-long .apply-copylabel {
+        grid-column: 1 / -1;
+      }
+
+      .apply-copyrow.is-long .apply-copyvalue {
+        font-family: var(--font-text);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: normal;
+        max-block-size: 8rem;
+        overflow-y: auto;
+      }
+
+      .apply .apply-copyrow button {
+        padding: 0.15rem 0.6rem;
+        font-size: var(--text-mono);
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--line);
+      }
+
+      .apply .apply-copyrow button:hover {
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+
+      .apply-copyall {
+        align-self: flex-start;
+      }
+
+      @media (max-width: 34rem) {
+        .apply-copyrow,
+        .apply-copyrow.is-long {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .apply-copylabel {
+          grid-column: 1 / -1;
+        }
+      }
+
       /* The empty state IS the interface here, so it gets the whole width and
          says what to do. A lone button in the corner of a black page reads as
          a broken screen. */
