@@ -383,7 +383,7 @@ Do not state the number of years here if you are also going to state it at the e
 
 Then two or three bullets, each starting with "- ".
 
-Then, only if he clearly misses something they explicitly required, one flat line saying so.
+Then, only if he clearly misses something they explicitly required, one flat line saying so. If the opening line already gave the number, do NOT repeat it here: write "That is short of the eight years you asked for." rather than restating how long he has worked. Saying it twice in a six-line email draws a circle around it.
 
 Then nothing. The links and signature are added afterwards; do not write them.
 
