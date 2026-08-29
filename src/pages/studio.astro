@@ -8,7 +8,7 @@
  * route behind it needs the studio key.
  */
 import '../styles/tokens.css';
-import ResumeStudio from '../components/studio/ResumeStudio';
+import StudioApp from '../components/studio/StudioApp';
 ---
 
 <!doctype html>
@@ -21,7 +21,7 @@ import ResumeStudio from '../components/studio/ResumeStudio';
     <link rel="icon" href="/favicon.svg" />
   </head>
   <body>
-    <ResumeStudio client:only="react" />
+    <StudioApp client:only="react" />
 
     <style is:global>
       *,
@@ -112,6 +112,204 @@ import ResumeStudio from '../components/studio/ResumeStudio';
         background: transparent;
         color: var(--ink);
         border-color: var(--line);
+      }
+
+      /* --------------------------------------------------------- app tabs */
+
+      .studio-apps {
+        display: flex;
+        gap: var(--space-2);
+        margin-block-end: var(--space-4);
+      }
+
+      .studio-apps button {
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--line);
+      }
+
+      .studio-apps button.is-active {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      /* ----------------------------------------------------------- apply */
+      /* Built thumb-first: this is used standing up, on a phone, in the
+         minute between seeing a post and deciding to apply. */
+
+      .apply {
+        max-width: 108rem;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      .apply-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      .apply .apply-overdue {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #b3261e;
+        border: 1px solid #b3261e;
+        border-radius: var(--radius-pill);
+        padding: 0.15em 0.7em;
+      }
+
+      .apply-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        gap: var(--space-4);
+        align-items: start;
+      }
+
+      .apply-col {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .apply-shot {
+        inline-size: 100%;
+        max-block-size: 40vh;
+        object-fit: contain;
+        object-position: top;
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .apply-facts {
+        margin: 0;
+        display: grid;
+        gap: var(--space-1);
+        font-size: var(--text-small);
+      }
+
+      .apply-facts > div {
+        display: grid;
+        grid-template-columns: 9rem minmax(0, 1fr);
+        gap: var(--space-3);
+      }
+
+      .apply-facts dt {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+
+      .apply-facts dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .apply-musts {
+        margin: 0;
+        padding-inline-start: 1.1em;
+        font-size: var(--text-small);
+        color: var(--muted);
+      }
+
+      .apply .apply-subject,
+      .apply .apply-body {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        padding: var(--space-2) var(--space-3);
+        inline-size: 100%;
+      }
+
+      .apply .apply-body {
+        min-block-size: 34vh;
+        resize: vertical;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      .apply-send {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      /* The one action that matters, styled as such. */
+      .apply .apply-primary {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: var(--space-2) var(--space-4);
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: var(--bg);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .apply-log h2 {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 400;
+        margin: 0 0 var(--space-2);
+      }
+
+      .apply-log ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .apply-log li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3);
+        padding-block: var(--space-2);
+        border-block-start: 1px solid var(--line);
+        font-size: var(--text-small);
+      }
+
+      .apply-log li.is-overdue {
+        border-inline-start: 3px solid #b3261e;
+        padding-inline-start: var(--space-3);
+      }
+
+      .apply-log-when {
+        font-family: var(--font-mono);
+        color: var(--muted);
+        flex: none;
+      }
+
+      .apply-log-what {
+        flex: 1 1 14rem;
+        min-width: 0;
+      }
+
+      .apply-log select {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        background: var(--bg);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        padding: 0.2em 0.4em;
       }
 
       /* ------------------------------------------------------------ shell */
@@ -432,6 +630,21 @@ import ResumeStudio from '../components/studio/ResumeStudio';
 
         .studio-thumbs {
           grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .apply-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .apply-facts > div {
+          grid-template-columns: 7rem minmax(0, 1fr);
+        }
+
+        /* Full-width targets: this is used one-handed. */
+        .apply-actions button,
+        .apply-send > * {
+          flex: 1 1 100%;
+          justify-content: center;
         }
 
         .studio-source {

@@ -10,7 +10,8 @@
     "translate": "node scripts/translate.mjs",
     "astro": "astro",
     "resume": "node scripts/resume.mjs",
-    "embed": "node scripts/embed-corpus.mjs"
+    "embed": "node scripts/embed-corpus.mjs",
+    "answers": "node scripts/sync-answers.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.82",
@@ -25,6 +26,7 @@
     "d3-force": "^3.0.0",
     "gsap": "^3.15.0",
     "ioredis": "^5.11.1",
+    "js-yaml": "^5.4.1",
     "lenis": "^1.3.25",
     "pg": "^8.22.0",
     "react": "^19.2.0",

@@ -40,7 +40,8 @@ export interface InsightsPayload {
 let pool: Pool | null | undefined;
 let schemaReady: Promise<void> | undefined;
 
-async function getPool(): Promise<Pool | null> {
+/** Shared by the job-application store too, so there is one pool per instance. */
+export async function getPool(): Promise<Pool | null> {
   if (pool !== undefined) return pool;
   const url =
     import.meta.env.POSTGRES_URL ??
