@@ -32,9 +32,13 @@ async function getRedis(): Promise<RedisClient | null> {
   try {
     const { default: Redis } = await import('ioredis');
     client = new Redis(url, {
-      maxRetriesPerRequest: 2,
-      lazyConnect: false,
-      enableOfflineQueue: false,
+      maxRetriesPerRequest: 3,
+      /* The offline queue must stay ON. With it off, any command issued before
+         the socket finishes connecting is rejected outright with "Stream isn't
+         writeable", which on a cold serverless instance is most of the first
+         requests: reads happened to land after connect, writes did not. */
+      enableOfflineQueue: true,
+      connectTimeout: 8000,
     }) as unknown as RedisClient;
   } catch {
     client = null;
