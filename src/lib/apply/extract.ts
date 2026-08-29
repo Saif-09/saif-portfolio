@@ -280,16 +280,22 @@ export interface Draft {
  * does not ask.
  */
 export function greeting(extraction: Extraction): string {
+  /* Title-cased in both branches. Extraction sometimes returns the poster's
+     name lower-cased from an address, and greeting someone "Hi arun," is worse
+     than not using their name at all. */
+  const cap = (word: string) =>
+    word ? `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}` : '';
+
   const posted = (extraction.postedBy ?? '').trim();
   const looksLikeName = /^[A-Za-z][A-Za-z.'-]+(\s+[A-Za-z][A-Za-z.'-]+)*$/.test(posted);
   if (posted && looksLikeName && !posted.includes('@')) {
-    return `Hi ${posted.split(/\s+/)[0]},`;
+    return `Hi ${cap(posted.split(/\s+/)[0])},`;
   }
   /* An address like arun@ usually is the person's name, and using it is what a
      human would do. Only when it reads like one, never the whole address. */
   const local = (extraction.contactEmail ?? '').split('@')[0] ?? '';
   if (/^[a-z]{3,14}$/i.test(local) && !/^(jobs|careers|hiring|hr|info|hello|apply|talent|recruit|team|contact|admin|no-?reply)$/i.test(local)) {
-    return `Hi ${local[0].toUpperCase()}${local.slice(1).toLowerCase()},`;
+    return `Hi ${cap(local)},`;
   }
   return 'Hello,';
 }
