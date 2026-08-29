@@ -379,23 +379,21 @@ export async function draftEmail(
 
   const system = `You draft short cold application emails for Mohd Saif, a product engineer in Delhi.
 
-SHAPE. Not prose. This exactly:
+SHAPE. Four parts, in this order, and nothing else.
 
-One opening line, written in the FIRST PERSON, saying what he builds and why it is relevant here. Not his name: the signature carries that. Not a job title in apposition.
-Good: "I build React Native apps end to end, both stores plus the Node backends behind them."
-Good: "I have spent three years shipping mobile products where the hard part was the release, not the UI."
-Bad: "Mohd Saif, a product engineer in Delhi with 3.5 years of experience." That is a name badge, not a sentence.
-Do NOT put the number of years in this opening line. If there is a shortfall, the number belongs in the line about it, where it is doing work. Say what he builds here, not how long for.
+1. What this is. One short line, plainly: "Applying for the <their exact role title> role. Resume below." Functional, not a flourish. A recruiter should know what the email is before they have finished the first line.
 
-Then two or three bullets, each starting with "- ".
+2. The fit, in two sentences at most. Open with the number of years and the stack THEY named, then say how his work has actually looked, using the words they used to describe the job.
+   Like this: "3.5 years of React Native + TypeScript, and most of it has looked like what you described: small teams, no bureaucracy, owning the app from Figma to App Store review."
+   Only borrow a description if it is TRUE of him. If the post says "small teams, no bureaucracy" and his material supports that, use it. If the post says something his material does not support, leave it out rather than claiming it.
 
-Then, only if he clearly misses something they explicitly required, ONE line saying so, and it must stand entirely on its own. Both numbers, in plain words, readable by someone who has not read the rest of the email and is not an engineer.
-Good: "I have three and a half years of experience, not the eight you asked for."
-Good: "On experience: I am at three and a half years, not eight."
-Bad: "That is short of the eight years you asked for." Short of WHAT? It points at a number it never says, and a recruiter skimming has to reconstruct it.
-Never start this line with "That is", "This is" or "While". Never make the reader look elsewhere to understand it.
+3. One short lead-in line to the bullets, tied to the post: "A few things that map directly to what you'll own:" or "A few that line up:" Vary it, keep it under ten words, end it with a colon.
 
-Then nothing. The links and signature are added afterwards; do not write them.
+4. The bullets.
+
+Then, only if he clearly misses something they explicitly required, ONE closing line. See below.
+
+Do not write a greeting, links, or a signature. Those are added afterwards.
 
 THE BULLETS ARE THE EMAIL
 - PICK them from the ACHIEVEMENTS list below. Do not write new ones. Selecting from things he has actually done is the whole point: it is what makes the email true.
@@ -459,20 +457,29 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
          returned the opener, the bullets and the closing line as one solid
          block, which is unreadable, and layout is not a judgement call. */
       const lines = core.split('\n').map((line) => line.trim()).filter(Boolean);
-      const bullets = lines.filter((line) => /^[-*•]\s+/.test(line)).map(
-        (line) => `- ${line.replace(/^[-*•]\s+/, '')}`,
-      );
-      const firstBullet = lines.findIndex((line) => /^[-*•]\s+/.test(line));
-      const opener = firstBullet > 0 ? lines.slice(0, firstBullet).join(' ') : lines[0] ?? '';
-      const closing =
-        firstBullet === -1
-          ? ''
-          : lines
-              .slice(firstBullet)
-              .filter((line) => !/^[-*•]\s+/.test(line))
-              .join(' ');
+      const isBullet = (line: string) => /^[-*•]\s+/.test(line);
+      const firstBullet = lines.findIndex(isBullet);
+      const bullets = lines.filter(isBullet).map((line) => `- ${line.replace(/^[-*•]\s+/, '')}`);
 
-      core = [opener, bullets.join('\n'), closing].filter(Boolean).join('\n\n');
+      /* Before the bullets: the "what this is" line, the fit, and the lead-in.
+         Each is its own paragraph except the lead-in, which belongs against the
+         bullets it introduces. */
+      const before = firstBullet === -1 ? lines : lines.slice(0, firstBullet);
+      const leadIn = before.length > 1 && before[before.length - 1].endsWith(':')
+        ? before[before.length - 1]
+        : '';
+      const head = leadIn ? before.slice(0, -1) : before;
+
+      const closing =
+        firstBullet === -1 ? '' : lines.slice(firstBullet).filter((line) => !isBullet(line)).join(' ');
+
+      core = [
+        ...head,
+        [leadIn, bullets.join('\n')].filter(Boolean).join('\n'),
+        closing,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
 
       const proof = pickProof(variant);
       const body = [
