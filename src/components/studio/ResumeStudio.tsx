@@ -833,6 +833,7 @@ export default function ResumeStudio() {
 
           <p className="studio-download">
             <a
+              className="studio-downloadlink"
               href={
                 source === 'draft' && active && draftUrls[active.id]
                   ? draftUrls[active.id]
@@ -840,9 +841,13 @@ export default function ResumeStudio() {
               }
               download={`Mohd_Saif_Resume_${active?.label.replace(/\s+/g, '_') ?? 'draft'}.pdf`}
             >
-              Download this PDF
+              Download {active?.label ?? ''} PDF
             </a>
-            {source === 'draft' && ' (the draft, not the published one)'}
+            {/* Which one you get depends on the switch above, and downloading
+                the wrong one is silent, so it says which. */}
+            <span className="studio-muted">
+              {source === 'draft' ? ' the draft you compiled' : ' the published one'}
+            </span>
           </p>
 
           <p className="studio-muted studio-note">

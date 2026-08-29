@@ -393,6 +393,25 @@ import StudioApp from '../components/studio/StudioApp';
         align-items: center;
       }
 
+      /* Sits with the send actions: attaching the PDF is part of sending. */
+      .apply .apply-download {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: var(--space-2) var(--space-4);
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .apply .apply-download:hover {
+        border-color: var(--ink);
+      }
+
       .apply-log h2 {
         font-family: var(--font-mono);
         font-size: var(--text-mono);
@@ -775,8 +794,28 @@ import StudioApp from '../components/studio/StudioApp';
         color: var(--muted);
       }
 
-      .studio-download a {
+      .studio .studio-downloadlink {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: var(--space-2) var(--space-4);
+        border: 1px solid var(--line);
         color: var(--ink);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .studio .studio-downloadlink:hover {
+        border-color: var(--ink);
+      }
+
+      .studio-download {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
       }
 
       .studio-tailored summary {

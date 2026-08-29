@@ -273,6 +273,8 @@ export interface Draft {
   to: string;
   variant: Variant;
   variantWhy: string;
+  /** The PDF for the variant it picked, so the email can attach it. */
+  resumeUrl: string;
   model: string;
   ms: number;
   /** Requirements the draft claims that his own material never mentions. */
@@ -512,6 +514,7 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
         .join(' ')
         .toLowerCase();
       return {
+        resumeUrl: VARIANT_URL[variant],
         suspect: suspectClaims(body, extraction, corpus),
         /* Their format wins when they specify one: a filter is probably
            looking for it. */

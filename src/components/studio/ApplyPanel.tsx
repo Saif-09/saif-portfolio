@@ -36,6 +36,7 @@ interface Draft {
   to: string;
   variant: string;
   variantWhy: string;
+  resumeUrl?: string;
   suspect?: string[];
 }
 
@@ -495,6 +496,15 @@ export default function ApplyPanel() {
                     <a className="apply-primary" href={mailto()}>
                       Open in Mail
                     </a>
+                    {draft.resumeUrl && (
+                      <a
+                        className="apply-download"
+                        href={draft.resumeUrl}
+                        download={`Mohd_Saif_Resume.pdf`}
+                      >
+                        Download the {draft.variant} resume
+                      </a>
+                    )}
                     <button type="button" className="studio-ghost" onClick={copyBody}>
                       Copy
                     </button>
