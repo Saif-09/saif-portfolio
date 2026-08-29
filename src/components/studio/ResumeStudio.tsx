@@ -14,6 +14,7 @@
  * minute behind a running clock.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { parseResume, applyFieldEdits, type Field } from '../../lib/studio/parse';
 
 interface Variant {
   id: string;
@@ -63,6 +64,15 @@ export default function ResumeStudio() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [tab, setTab] = useState<string>('');
   const [pane, setPane] = useState<'preview' | 'source'>('preview');
+  /* Form or raw LaTeX. The form is the default because finding the right line
+     in 17,000 characters of TeX is the thing that makes editing this painful. */
+  const [editor, setEditor] = useState<'form' | 'source'>('form');
+  /* Held locally while typing, committed on blur. Re-parsing every keystroke
+     would move the field's own range out from under it, and a half-typed brace
+     would make it vanish mid-edit. */
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const sourceRef = useRef<HTMLTextAreaElement>(null);
 
   const [tex, setTex] = useState('');
   const [baseTex, setBaseTex] = useState('');
@@ -108,6 +118,36 @@ export default function ResumeStudio() {
   const blobs = useRef<string[]>([]);
 
   const dirty = tex !== baseTex && baseTex !== '';
+
+  const parsed = useMemo(() => (tex ? parseResume(tex) : { fields: [], groups: [] }), [tex]);
+
+  /** Commit one field back into the source, replacing only its own span. */
+  function commitField(field: Field, value: string) {
+    setDrafts((current) => {
+      const next = { ...current };
+      delete next[field.id];
+      return next;
+    });
+    if (value === field.value) return;
+    setTex((current) => applyFieldEdits(current, [{ ...field, value }]));
+  }
+
+  /** Show a field's place in the raw LaTeX, which is the Overleaf trick. */
+  function revealInSource(field: Field) {
+    setEditor('source');
+    setPane('source');
+    window.setTimeout(() => {
+      const area = sourceRef.current;
+      if (!area) return;
+      area.focus();
+      area.setSelectionRange(field.start, field.end);
+      /* Scroll the selection into view: textareas do not do it themselves.
+         Measured from the line count, which is close enough to land on it. */
+      const before = tex.slice(0, field.start).split('\n').length;
+      const lineHeight = area.scrollHeight / Math.max(1, tex.split('\n').length);
+      area.scrollTop = Math.max(0, (before - 6) * lineHeight);
+    }, 60);
+  }
   const draftIsCurrent = draftOf !== null && draftOf === tex;
 
   const api = useCallback(
@@ -952,17 +992,118 @@ export default function ResumeStudio() {
             </div>
           )}
 
-          <label htmlFor="studio-source" className="studio-source-label">
+          <div className="studio-editorswitch" role="group" aria-label="Editor">
+            <button
+              type="button"
+              className={editor === 'form' ? 'is-active' : ''}
+              onClick={() => setEditor('form')}
+            >
+              Form
+            </button>
+            <button
+              type="button"
+              className={editor === 'source' ? 'is-active' : ''}
+              onClick={() => setEditor('source')}
+            >
+              LaTeX
+            </button>
+            <span className="studio-muted">
+              {editor === 'form'
+                ? `${parsed.fields.length} fields`
+                : `${tex.length.toLocaleString()} characters`}
+            </span>
+          </div>
+
+          {editor === 'form' && (
+            <div className="studio-form">
+              {parsed.groups.map((group) => {
+                const groupFields = parsed.fields.filter((f) => f.group === group);
+                const open = openGroups[group] ?? group.startsWith('Base');
+                return (
+                  <section key={group} className="studio-fieldset">
+                    <button
+                      type="button"
+                      className="studio-grouphead"
+                      aria-expanded={open}
+                      onClick={() =>
+                        setOpenGroups((current) => ({ ...current, [group]: !open }))
+                      }
+                    >
+                      <span>{group}</span>
+                      <span className="studio-muted">{groupFields.length}</span>
+                    </button>
+
+                    {open &&
+                      groupFields.map((field) => {
+                        const value = drafts[field.id] ?? field.value;
+                        /* A half-typed brace would make the field vanish on the
+                           next parse, so warn instead of letting it save. */
+                        const braces =
+                          (value.match(/(?<!\\)\{/g) ?? []).length -
+                          (value.match(/(?<!\\)\}/g) ?? []).length;
+                        return (
+                          <div key={field.id} className="studio-field">
+                            <label htmlFor={`f-${field.id}`}>
+                              {field.label}
+                              <button
+                                type="button"
+                                className="studio-reveal"
+                                onClick={() => revealInSource(field)}
+                                title="Show this in the LaTeX"
+                              >
+                                in LaTeX
+                              </button>
+                            </label>
+                            {field.multiline ? (
+                              <textarea
+                                id={`f-${field.id}`}
+                                value={value}
+                                rows={Math.min(6, Math.ceil(value.length / 70) + 1)}
+                                onChange={(e) =>
+                                  setDrafts((c) => ({ ...c, [field.id]: e.target.value }))
+                                }
+                                onBlur={(e) => commitField(field, e.target.value)}
+                              />
+                            ) : (
+                              <input
+                                id={`f-${field.id}`}
+                                value={value}
+                                onChange={(e) =>
+                                  setDrafts((c) => ({ ...c, [field.id]: e.target.value }))
+                                }
+                                onBlur={(e) => commitField(field, e.target.value)}
+                              />
+                            )}
+                            {braces !== 0 && (
+                              <p className="studio-fieldwarn">
+                                Braces are unbalanced by {braces}. Fix before leaving this field.
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </section>
+                );
+              })}
+            </div>
+          )}
+
+          <label
+            htmlFor="studio-source"
+            className="studio-source-label"
+            hidden={editor === 'form'}
+          >
             resume.tex
-            <span className="studio-muted"> · {tex.length.toLocaleString()} characters</span>
           </label>
           <textarea
             id="studio-source"
+            ref={sourceRef}
             className="studio-source"
             value={tex}
             onChange={(e) => setTex(e.target.value)}
             spellCheck={false}
             wrap="off"
+            hidden={editor === 'form'}
           />
         </section>
       </div>

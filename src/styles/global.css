@@ -1129,6 +1129,17 @@ html:not(.lenis) [data-split] * {
   transition: opacity 300ms ease;
 }
 
+/* The row title is an <h3> for the document outline. Re-state what the base
+   heading rules would otherwise reach in (`text-wrap: balance`, and the
+   per-script line-height and tracking) so the outline change is invisible:
+   .work-rows .work-row-name outranks h3:lang(ar) and friends. */
+.work-rows .work-row-name {
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-display);
+  text-wrap: wrap;
+}
+
 .work-row:hover .work-row-name {
   opacity: 0.45;
 }

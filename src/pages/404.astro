@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+import {
+  AGENT_ENTRY_POINTS,
+  SECTIONS,
+  NOT_FOUND_TITLE,
+  NOT_FOUND_LEAD,
+  notFoundMarkdown,
+} from '../lib/markdown/not-found';
+import { PRODUCES, selectRepresentation, notAcceptableBody } from '../lib/http/accept.mjs';
+import { profile } from '../data/profile';
+
+/**
+ * Server-rendered on purpose. A prerendered 404.html would be a real 404
+ * status too, but it could only ever be HTML: an agent that asked for
+ * markdown would get a wall of markup at exactly the moment it is already
+ * lost. Rendering here lets the 404 negotiate like every other URL, and it
+ * is the one route where the body matters more than the bytes it costs.
+ *
+ * The body is deliberately identical for every missing path (no echo of the
+ * URL), so the CDN caches one variant per representation instead of one per
+ * crawler typo.
+ */
+export const prerender = false;
+
+const accept = Astro.request.headers.get('accept');
+const chosen = selectRepresentation(accept);
+
+const CACHE = 'public, max-age=0, s-maxage=600, stale-while-revalidate=86400';
+
+if (chosen === null) {
+  return new Response(notAcceptableBody(accept, PRODUCES), {
+    status: 406,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      Vary: 'Accept',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
+if (chosen === 'text/markdown') {
+  return new Response(notFoundMarkdown(), {
+    status: 404,
+    headers: {
+      'Content-Type': 'text/markdown; charset=utf-8',
+      Vary: 'Accept',
+      'Cache-Control': CACHE,
+    },
+  });
+}
+
+Astro.response.status = 404;
+Astro.response.headers.set('Vary', 'Accept');
+Astro.response.headers.set('Cache-Control', CACHE);
+---
+
+<Base
+  locale="en"
+  noindex
+  title={`404: ${NOT_FOUND_TITLE} · ${profile.name}`}
+  description={NOT_FOUND_LEAD}
+>
+  <div class="notfound container">
+    <header class="page-header">
+      <h1 class="sec-label">
+        <span class="sec-n" aria-hidden="true">(404)</span><br />
+        {NOT_FOUND_TITLE}
+      </h1>
+      <p class="page-lead">{NOT_FOUND_LEAD}</p>
+    </header>
+
+    <section class="notfound-block" aria-labelledby="nf-agents">
+      <h2 class="notfound-heading" id="nf-agents">Start here instead</h2>
+      <ul class="notfound-list" role="list">
+        {
+          AGENT_ENTRY_POINTS.map((entry) => (
+            <li>
+              <a class="notfound-link" href={entry.href}>
+                <code>{entry.href}</code>
+              </a>
+              <span class="notfound-note">{entry.note}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="notfound-block" aria-labelledby="nf-pages">
+      <h2 class="notfound-heading" id="nf-pages">Pages on this site</h2>
+      <ul class="notfound-list" role="list">
+        {
+          SECTIONS.map((entry) => (
+            <li>
+              <a class="notfound-link" href={entry.href}>
+                <code>{entry.href}</code>
+              </a>
+              <span class="notfound-note">{entry.note}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <p class="notfound-foot">
+      Every page here also answers <code>Accept: text/markdown</code>, and has a
+      <code>.md</code> twin. This 404 does too.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: var(--space-12) var(--space-16);
+  }
+
+  .notfound-block {
+    margin-block-start: var(--space-10);
+  }
+
+  .notfound-heading {
+    font-size: var(--text-h2);
+    margin-block-end: var(--space-4);
+  }
+
+  .notfound-list {
+    display: grid;
+    gap: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+
+  .notfound-list li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-3);
+    border-block-start: 1px solid var(--line);
+    padding-block-start: var(--space-3);
+  }
+
+  .notfound-link code,
+  .notfound-foot code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .notfound-note {
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  .notfound-foot {
+    margin-block-start: var(--space-10);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+</style>

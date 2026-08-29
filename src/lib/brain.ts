@@ -44,15 +44,7 @@ export function slugifyNote(basename: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-/** Display order and labels for note types on the /brain index. */
-export const NOTE_TYPES = [
-  { type: 'moc', label: 'Maps of content' },
-  { type: 'meta', label: 'Meta' },
-  { type: 'decision', label: 'Decisions' },
-  { type: 'feature', label: 'Features' },
-  { type: 'design', label: 'Design' },
-  { type: 'phase', label: 'Phases' },
-] as const;
+export { NOTE_TYPES } from './brain-types';
 
 async function listVaultFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });

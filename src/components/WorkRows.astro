@@ -31,18 +31,21 @@ const roleLabel = (p: Project) => (p.role === 'built-0-1' ? t.work.built01 : t.w
           rel={project.featured ? undefined : 'noopener'}
           data-reveal
         >
-          <span class="container work-row-inner">
+          <div class="container work-row-inner">
             <span class="work-row-n" aria-hidden="true">
               {String(startIndex + i + 1).padStart(2, '0')}
             </span>
-            <span>
-              <span class="work-row-name">{project.name}</span>
+            {/* A real <h3>, not a styled span: the row title is the only
+                thing giving the work list a document outline, and a flat
+                page of <h2>s is what an agent sees as structureless. */}
+            <div>
+              <h3 class="work-row-name">{project.name}</h3>
               <span class="work-row-tags">
                 {roleLabel(project)} · {project.scope}
               </span>
-            </span>
+            </div>
             <span class="work-row-arrow" aria-hidden="true">→</span>
-          </span>
+          </div>
           <span class="work-row-thumb" aria-hidden="true">
             <ProjectThumb project={project} />
           </span>

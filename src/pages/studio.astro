@@ -857,6 +857,111 @@ import StudioApp from '../components/studio/StudioApp';
         text-decoration: underline;
       }
 
+      /* ------------------------------------------------------------- form */
+      /* The point of this pane: edit the words without hunting for the line
+         in 17,000 characters of TeX. */
+
+      .studio-editorswitch {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .studio-editorswitch button {
+        background: transparent;
+        color: var(--muted);
+        border-color: var(--line);
+      }
+
+      .studio-editorswitch button.is-active {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      .studio-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        max-block-size: 68vh;
+        overflow-y: auto;
+        padding-inline-end: var(--space-2);
+      }
+
+      .studio-fieldset {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .studio .studio-grouphead {
+        inline-size: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        background: transparent;
+        border: 0;
+        color: var(--ink);
+        text-align: start;
+        cursor: pointer;
+      }
+
+      .studio-field {
+        padding: var(--space-2) var(--space-3) var(--space-3);
+        border-block-start: 1px solid var(--line);
+      }
+
+      .studio-field label {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-2);
+        margin-block-end: var(--space-1);
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+
+      .studio .studio-reveal {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: var(--muted);
+        font-size: var(--text-mono);
+        text-decoration: underline;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        flex: none;
+      }
+
+      .studio .studio-reveal:hover {
+        color: var(--ink);
+      }
+
+      .studio .studio-field input,
+      .studio .studio-field textarea {
+        inline-size: 100%;
+        font-family: var(--font-text);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        padding: var(--space-2) var(--space-3);
+        resize: vertical;
+      }
+
+      .studio-fieldwarn {
+        margin: var(--space-1) 0 0;
+        font-size: var(--text-small);
+        color: #b3261e;
+      }
+
       /* ----------------------------------------------------------- source */
 
       .studio-source {

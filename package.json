@@ -5,8 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/vercel-routes.mjs",
     "preview": "astro preview",
+    "test": "node --test tests/",
     "translate": "node scripts/translate.mjs",
     "astro": "astro",
     "resume": "node scripts/resume.mjs",

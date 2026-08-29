@@ -15,6 +15,8 @@ import {
   type Locale,
 } from '../i18n';
 import { profile, keywords, allSkills } from '../data/profile';
+import { pageMarkdownFor } from '../lib/markdown/pages';
+import { mdPathForPage } from '../lib/markdown/render.mjs';
 
 interface Props {
   locale: Locale;
@@ -24,9 +26,11 @@ interface Props {
   ogImage?: string;
   /** Additional JSON-LD blocks (e.g. CreativeWork on case studies). */
   jsonLd?: Record<string, unknown>[];
+  /** Keep this page out of the index (the 404 route). */
+  noindex?: boolean;
 }
 
-const { locale, jsonLd = [] } = Astro.props;
+const { locale, jsonLd = [], noindex = false } = Astro.props;
 const def = getLocale(locale);
 const t = useTranslations(locale);
 
@@ -52,14 +56,33 @@ const OG_LOCALES: Record<string, string> = {
 };
 const ogLocale = OG_LOCALES[locale] ?? 'en_US';
 
+/**
+ * The markdown twin of this page, when it has one. Advertised in the head so
+ * an agent that never sends Accept: text/markdown can still find it; the same
+ * bytes come back from this URL under Accept: text/markdown (see
+ * /api/markdown). Only the canonical English pages carry a twin.
+ */
+const markdownTwin = pageMarkdownFor(pathname)
+  ? new URL(mdPathForPage(pathname), Astro.site)
+  : null;
+
+const siteUrl = Astro.site?.toString() ?? 'https://saifsiddiqui.in/';
+const personId = `${siteUrl}#person`;
+
 const personJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
+  '@id': personId,
   name: profile.name,
+  /* The domain says "saifsiddiqui" and the wordmark says "Mohd Saif". Naming
+     both, plus the short form people actually type, is what lets a search
+     engine tie the two halves of the brand to one entity. */
+  alternateName: ['Saif Siddiqui', 'Mohd Saif Siddiqui', 'Saif'],
   jobTitle: profile.role,
   description: t.site.description,
   email: `mailto:${profile.email}`,
-  url: Astro.site?.toString(),
+  url: siteUrl,
+  mainEntityOfPage: siteUrl,
   image: new URL('/favicons/favicon-512.png', Astro.site).toString(),
   sameAs: [profile.github, profile.linkedin],
   knowsAbout: allSkills,
@@ -72,7 +95,23 @@ const personJsonLd = {
   },
 };
 
-const jsonLdBlocks = [personJsonLd, ...jsonLd];
+/** Names the site itself as an entity, and binds it to the person above. */
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${siteUrl}#website`,
+  name: profile.name,
+  alternateName: ['Mohd Saif portfolio', 'Saif Siddiqui', 'saifsiddiqui.in'],
+  url: siteUrl,
+  description: t.site.description,
+  inLanguage: LOCALES.map((l) => l.lang),
+  author: { '@id': personId },
+  creator: { '@id': personId },
+  publisher: { '@id': personId },
+  copyrightHolder: { '@id': personId },
+};
+
+const jsonLdBlocks = [personJsonLd, websiteJsonLd, ...jsonLd];
 
 const scriptFont = def.scriptFont;
 const scriptFontCss = scriptFont
@@ -116,10 +155,14 @@ const scriptFontCss = scriptFont
     <meta name="keywords" content={keywords} />
     <meta name="author" content={profile.name} />
     <meta name="creator" content={profile.name} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow'} />
     <meta
       name="googlebot"
-      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      content={
+        noindex
+          ? 'noindex, follow'
+          : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      }
     />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonical} />
@@ -140,6 +183,11 @@ const scriptFontCss = scriptFont
     <link rel="icon" href="/favicons/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicons/favicon-16.png" sizes="16x16" type="image/png" />
     <link rel="apple-touch-icon" href="/favicons/favicon-180.png" />
+    {
+      markdownTwin && (
+        <link rel="alternate" type="text/markdown" href={markdownTwin} title="Markdown" />
+      )
+    }
 
     {
       scriptFont && (
