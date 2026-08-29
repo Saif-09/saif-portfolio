@@ -20,7 +20,10 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { VARIANTS, type VariantId } from './variants';
 import { env } from '../env';
 
-export const MAX_INSTRUCTION_CHARS = 2000;
+/* Was 2000, which a pasted job description blows straight through. Tailoring
+   the resume to a specific JD is the most useful thing this box does, so the
+   limit has to fit one. */
+export const MAX_INSTRUCTION_CHARS = 16_000;
 export const MAX_TEX_CHARS = 120_000;
 
 /** Below this length a whitespace-tolerant match is too likely to be an accident. */
@@ -59,6 +62,19 @@ HOW THE FILE WORKS
 WHERE TO PUT AN EDIT
 - Change applies to every variant (new job, reworded bullet, new skill, fixed typo): edit the body, or the default macro definition.
 - Change applies to one role only: edit inside that variant's \\ifdefstring block. If the macro is not yet overridden there, add a \\renewcommand for it inside that block.
+
+WHEN THE INSTRUCTION IS A JOB DESCRIPTION
+Treat it as "tailor this variant to this role", and do it by REARRANGING AND REWORDING WHAT IS ALREADY TRUE:
+- Reorder \\shoppinOrder and \\skillsOrder so what they asked for comes first.
+- Rewrite \\summaryBody and \\shoppinIntro in their vocabulary, describing the same work.
+- Surface real experience that matches and is currently buried. Stop emphasising what does not match.
+- In the note, say which of their stated requirements he does NOT meet. That is the useful half: he decides whether to apply, and needs to know what he is walking into.
+
+NEVER, under any circumstances:
+- Add a technology, tool, employer or metric that is not already somewhere in the file. If the post wants Expo and the file does not say Expo, it does not go in.
+- Change any year, duration or date. If they ask for 8+ years and the file says 3.5+, it stays 3.5+ and you say so in the note.
+- Invent scale ("millions of users"), team size, or an outcome.
+A resume that wins an interview on a claim he cannot back is worse than one that never got the interview.
 
 RULES
 - Escape LaTeX specials in prose: \\% \\& \\_ \\# \\$. Write --- never an em dash character, and -- for a date range.
