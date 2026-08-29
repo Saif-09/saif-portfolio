@@ -375,7 +375,11 @@ export async function draftEmail(
 
 SHAPE. Not prose. This exactly:
 
-One opening line: what he does and the single most relevant thing about it for THIS role. One sentence, no greeting, no preamble.
+One opening line, written in the FIRST PERSON, saying what he builds and why it is relevant here. Not his name: the signature carries that. Not a job title in apposition.
+Good: "I build React Native apps end to end, both stores plus the Node backends behind them."
+Good: "I have spent three years shipping mobile products where the hard part was the release, not the UI."
+Bad: "Mohd Saif, a product engineer in Delhi with 3.5 years of experience." That is a name badge, not a sentence.
+Do not state the number of years here if you are also going to state it at the end. Say it once, in whichever place matters more.
 
 Then two or three bullets, each starting with "- ".
 
@@ -440,6 +444,25 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
       let core = result.text.trim().replace(/—/g, ',');
       core = core.replace(/^\s*(hi|hello|hey|dear)\b[^\n]*\n+/i, '');
       core = core.replace(/\n+(mohd saif|regards|best|thanks)[\s\S]*$/i, '').trim();
+
+      /* Reassembled here rather than trusting the model's line breaks. It
+         returned the opener, the bullets and the closing line as one solid
+         block, which is unreadable, and layout is not a judgement call. */
+      const lines = core.split('\n').map((line) => line.trim()).filter(Boolean);
+      const bullets = lines.filter((line) => /^[-*•]\s+/.test(line)).map(
+        (line) => `- ${line.replace(/^[-*•]\s+/, '')}`,
+      );
+      const firstBullet = lines.findIndex((line) => /^[-*•]\s+/.test(line));
+      const opener = firstBullet > 0 ? lines.slice(0, firstBullet).join(' ') : lines[0] ?? '';
+      const closing =
+        firstBullet === -1
+          ? ''
+          : lines
+              .slice(firstBullet)
+              .filter((line) => !/^[-*•]\s+/.test(line))
+              .join(' ');
+
+      core = [opener, bullets.join('\n'), closing].filter(Boolean).join('\n\n');
 
       const proof = pickProof(variant);
       const body = [
