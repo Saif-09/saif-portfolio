@@ -36,6 +36,7 @@ interface Draft {
   to: string;
   variant: string;
   variantWhy: string;
+  suspect?: string[];
 }
 
 interface Application {
@@ -461,6 +462,14 @@ export default function ApplyPanel() {
                   <p className="studio-muted">
                     Sending the <strong>{draft.variant}</strong> resume, because {draft.variantWhy}.
                   </p>
+
+                  {draft.suspect && draft.suspect.length > 0 && (
+                    <p className="studio-error">
+                      Check before sending: the draft mentions{' '}
+                      <strong>{draft.suspect.join(', ')}</strong>, which the post asks for but your
+                      own material never mentions. Cut it unless it is genuinely true.
+                    </p>
+                  )}
 
                   <label className="studio-source-label" htmlFor="apply-subject">
                     Subject

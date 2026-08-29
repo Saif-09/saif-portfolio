@@ -10,6 +10,7 @@
 import { generateObject, generateText, jsonSchema } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { env } from '../env';
+import { skills, employers } from '../../data/profile';
 
 /* Lite first: extraction is reading, not reasoning, and it was as accurate as
    the larger model at half the latency on a real post. */
@@ -263,7 +264,70 @@ export interface Draft {
   variantWhy: string;
   model: string;
   ms: number;
+  /** Requirements the draft claims that his own material never mentions. */
+  suspect: string[];
 }
+
+/**
+ * Who to greet, decided in code.
+ *
+ * Told to "greet without a name", a model handed a contact address will still
+ * write "Hi arun@scalingtheory.com,". Names are not a judgement call, so this
+ * does not ask.
+ */
+export function greeting(extraction: Extraction): string {
+  const posted = (extraction.postedBy ?? '').trim();
+  const looksLikeName = /^[A-Za-z][A-Za-z.'-]+(\s+[A-Za-z][A-Za-z.'-]+)*$/.test(posted);
+  if (posted && looksLikeName && !posted.includes('@')) {
+    return `Hi ${posted.split(/\s+/)[0]},`;
+  }
+  /* An address like arun@ usually is the person's name, and using it is what a
+     human would do. Only when it reads like one, never the whole address. */
+  const local = (extraction.contactEmail ?? '').split('@')[0] ?? '';
+  if (/^[a-z]{3,14}$/i.test(local) && !/^(jobs|careers|hiring|hr|info|hello|apply|talent|recruit|team|contact|admin|no-?reply)$/i.test(local)) {
+    return `Hi ${local[0].toUpperCase()}${local.slice(1).toLowerCase()},`;
+  }
+  return 'Hello,';
+}
+
+/**
+ * Requirements from the post that the draft claims but his material never
+ * mentions.
+ *
+ * This is the failure mode that matters: told to use the employer's
+ * vocabulary, a model turns their requirement list into his experience. It
+ * wrote "I use Expo and EAS for CI/CD" when his material says Expo and has
+ * never said EAS. Caught here and shown, rather than sent.
+ */
+export function suspectClaims(body: string, extraction: Extraction, corpus: string): string[] {
+  const haystack = corpus.toLowerCase();
+  const draft = body.toLowerCase();
+  const suspects = new Set<string>();
+
+  const terms = extraction.mustHaves
+    .join(' ')
+    .split(/[^A-Za-z0-9+#./-]+/)
+    .filter((term) => term.length >= 3 && !/^\d+$/.test(term));
+
+  for (const term of terms) {
+    const lower = term.toLowerCase();
+    if (COMMON.has(lower)) continue;
+    if (draft.includes(lower) && !haystack.includes(lower)) suspects.add(term);
+  }
+  return [...suspects];
+}
+
+/* Ordinary English that happens to appear in requirement lists. Flagging these
+   would bury the real ones. */
+const COMMON = new Set([
+  'and', 'the', 'for', 'with', 'you', 'your', 'our', 'are', 'not', 'has', 'have', 'will',
+  'years', 'year', 'experience', 'strong', 'deep', 'good', 'great', 'work', 'working',
+  'build', 'building', 'built', 'ship', 'shipping', 'shipped', 'own', 'owning', 'end',
+  'production', 'apps', 'app', 'mobile', 'engineering', 'engineer', 'understanding',
+  'fundamentals', 'skills', 'mindset', 'about', 'across', 'from', 'into', 'that', 'this',
+  'complete', 'complex', 'high', 'real', 'time', 'data', 'code', 'test', 'testing',
+  'reliability', 'performance', 'optimisation', 'optimization', 'debugging', 'scale',
+]);
 
 export async function draftEmail(
   extraction: Extraction,
@@ -274,6 +338,7 @@ export async function draftEmail(
 
   const { variant, why } = pickVariant(extraction);
   const resumeUrl = VARIANT_URL[variant];
+  const greet = greeting(extraction);
 
   const paragraphs = (answers?.paragraphs ?? {}) as Record<string, string>;
   const identity = (answers?.identity ?? {}) as Record<string, string>;
@@ -304,7 +369,9 @@ These are the tells that make an email read as generated. Avoid every one:
 - Do not open the same way every time. If the post gives you something concrete to react to, react to it.
 
 MATCHING THE POST
-- Use their vocabulary for the stack. If they say "offline-first", say offline-first, not "local persistence".
+- Use their vocabulary ONLY for things he has actually done. Rewording his real work in their words is the job. Claiming their requirement because they listed it is not.
+- If they name a tool that does not appear in the material above, do not mention that tool at all. Not to claim it, not to dodge it. It simply does not appear. Listing "Expo and EAS" when the material says only Expo is the exact error to avoid.
+- Never write "at scale", "in production at scale" or similar unless those words are in the material.
 - Answer their listed requirements in roughly their order of emphasis.
 - If they ask for something he does not have, either leave it alone or name it once, plainly, in half a sentence. Never apologise for it, never pad around it, never explain it away.
 
@@ -338,7 +405,7 @@ Possible proof links: https://saifsiddiqui.in/work/ueue (solo product on both st
 Sign off with exactly:
 ${answers?.signature ?? `Mohd Saif\n${identity.phone ?? ''}\n${identity.portfolio ?? ''}`}
 
-Greet ${extraction.postedBy ? `"${extraction.postedBy.split(' ')[0]}"` : 'without a name ("Hello,")'}.`;
+Open with exactly this line and nothing else before it: ${greet}`;
 
   const google = createGoogleGenerativeAI({ apiKey: key });
   let lastError = '';
@@ -347,7 +414,16 @@ Greet ${extraction.postedBy ? `"${extraction.postedBy.split(' ')[0]}"` : 'withou
     try {
       const result = await generateText({ model: google(model), system, prompt });
       const body = result.text.trim().replace(/—/g, ',');
+      /* Everything he can legitimately claim, in one blob to check against. */
+      const corpus = [
+        JSON.stringify(answers ?? {}),
+        Object.values(skills).flat().join(' '),
+        employers.join(' '),
+      ]
+        .join(' ')
+        .toLowerCase();
       return {
+        suspect: suspectClaims(body, extraction, corpus),
         /* Their format wins when they specify one: a filter is probably
            looking for it. */
         subject: extraction.requiredSubject || `${extraction.role} : Mohd Saif`,
