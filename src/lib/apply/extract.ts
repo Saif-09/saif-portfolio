@@ -26,6 +26,8 @@ export type Variant = 'product' | 'mobile' | 'ai' | 'fullstack';
 export interface Extraction {
   company: string;
   role: string;
+  /** The role as a person would say it, without the posting's adjectives. */
+  roleShort: string;
   location: string;
   employmentType: string;
   yearsAsked: string;
@@ -49,6 +51,11 @@ const EXTRACTION_SCHEMA = jsonSchema<Extraction>({
   properties: {
     company: { type: 'string' },
     role: { type: 'string' },
+    roleShort: {
+      type: 'string',
+      description:
+        'The role as you would say it out loud, without marketing adjectives or the posting\'s punctuation. "Hardcore React Native / Mobile Engineer, Senior / Lead" becomes "Senior/Lead React Native". Keep it under six words.',
+    },
     location: { type: 'string' },
     employmentType: { type: 'string', description: 'full-time, contract, internship' },
     yearsAsked: { type: 'string', description: 'e.g. "4+" or "" if not stated' },
@@ -68,7 +75,7 @@ const EXTRACTION_SCHEMA = jsonSchema<Extraction>({
     suspiciousReason: { type: 'string' },
   },
   required: [
-    'company', 'role', 'location', 'employmentType', 'yearsAsked', 'howToApply',
+    'company', 'role', 'roleShort', 'location', 'employmentType', 'yearsAsked', 'howToApply',
     'contactEmail', 'formUrl', 'requiredSubject', 'mustHaves', 'postedBy',
     'deadline', 'salary', 'notVisible', 'suspicious', 'suspiciousReason',
   ],
@@ -381,7 +388,7 @@ export async function draftEmail(
 
 SHAPE. Four parts, in this order, and nothing else.
 
-1. What this is. One short line, plainly: "Applying for the <their exact role title> role. Resume below." Functional, not a flourish. A recruiter should know what the email is before they have finished the first line.
+1. What this is. One short line, plainly: "Applying for the <role, said naturally> role. Resume below." Use the tidied version of the title given below, never the posting's headline with its adjectives: nobody writes "Applying for the Hardcore React Native / Mobile Engineer, Senior / Lead role." Functional, not a flourish. A recruiter should know what the email is before they have finished the first line.
 
 2. The fit, in two sentences at most. Open with the number of years and the stack THEY named, then say how his work has actually looked, using the words they used to describe the job.
    Like this: "3.5 years of React Native + TypeScript, and most of it has looked like what you described: small teams, no bureaucracy, owning the app from Figma to App Store review."
@@ -401,7 +408,7 @@ THE BULLETS ARE THE EMAIL
 - Two or three. Never four. Never one.
 - Keep each close to the given wording. Trimming and light rewording to fit their vocabulary is fine; adding a claim is not.
 - Lead with the work or the outcome, not with "I". "Migrated Wellbeing Nutrition off Appmaker..." not "I migrated...". A couple may start with I; all of them starting with I reads as a list of boasts.
-- Each bullet is one line, at most about 25 words. Cut the clause that carries no information.
+- Each bullet is one line and at most 25 words. Count them. If one runs over, cut the trailing clause: the detail that survives is the one with the number or the hard part in it, not the explanation of why it mattered.
 
 WRITE LIKE A PERSON, NOT LIKE A MODEL
 - Never an em dash. Comma, colon or full stop.
@@ -424,6 +431,7 @@ Output the opening line and the bullets only.`;
   const prompt = `THE POST:
 company: ${extraction.company || '(not visible)'}
 role: ${extraction.role}
+say the role as: ${extraction.roleShort || extraction.role}
 location: ${extraction.location}
 they asked for: ${extraction.yearsAsked || 'unstated'} years
 requirements they listed: ${extraction.mustHaves.join('; ') || '(none listed)'}
@@ -507,7 +515,10 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
         suspect: suspectClaims(body, extraction, corpus),
         /* Their format wins when they specify one: a filter is probably
            looking for it. */
-        subject: extraction.requiredSubject || `${extraction.role} : Mohd Saif`,
+        /* The tidied title, not the posting's headline: quoting "Hardcore
+           React Native / Mobile Engineer" back at them reads badly, and a
+           subject line is the first thing they see. */
+        subject: extraction.requiredSubject || `${extraction.roleShort || extraction.role} : Mohd Saif`,
         body,
         to: extraction.contactEmail,
         variant,
