@@ -11,6 +11,10 @@ import { generateObject, generateText, jsonSchema } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { env } from '../env';
 import { skills, employers } from '../../data/profile';
+/* The resume itself, inlined at build time. It is the authority on what he can
+   claim, and without it the check called CI/CD a fabrication when it is printed
+   on his resume. */
+import resumeTex from '/resume/resume.tex?raw';
 
 /* Lite first: extraction is reading, not reasoning, and it was as accurate as
    the larger model at half the latency on a real post. */
@@ -327,6 +331,10 @@ const COMMON = new Set([
   'fundamentals', 'skills', 'mindset', 'about', 'across', 'from', 'into', 'that', 'this',
   'complete', 'complex', 'high', 'real', 'time', 'data', 'code', 'test', 'testing',
   'reliability', 'performance', 'optimisation', 'optimization', 'debugging', 'scale',
+  'expertise', 'pipelines', 'pipeline', 'lifecycle', 'release', 'releases', 'monitoring',
+  'interfaces', 'animations', 'workflows', 'systems', 'polished', 'heavy', 'flows',
+  'offline', 'first', 'native', 'serious', 'expert', 'ability', 'mindset', 'around',
+  'design', 'designing', 'take', 'takes', 'using', 'use', 'uses', 'strong', 'solid',
 ]);
 
 export async function draftEmail(
@@ -363,7 +371,9 @@ These are the tells that make an email read as generated. Avoid every one:
 - No "not just X, but Y".
 - Do not stack adverbs. One "efficiently" is one too many.
 
-- Vary sentence length. At least one sentence under ten words. Emails where every sentence is the same length read as machine output.
+- Vary sentence length, and this is not optional: at least ONE sentence must be under ten words. Three thirty-word sentences in a row is the single clearest sign a machine wrote it. A short line like "I ship, then I measure." or "That one took four months." earns its place.
+- Do not write "I bring", "I offer", "I would bring". Say what he did, in the past tense.
+- Where he falls short of a requirement, state it flat and move on. Do not pivot off it with "While you asked for X, I...". That construction is a tell and it draws attention to the gap.
 - Contractions are good: I've, I'm, it's, doesn't.
 - Include at least two checkable specifics: a product name, a real number from the material, a named technology he actually used. Vague competence is what a model writes; a specific is what a person writes.
 - Do not open the same way every time. If the post gives you something concrete to react to, react to it.
@@ -405,7 +415,7 @@ Possible proof links: https://saifsiddiqui.in/work/ueue (solo product on both st
 Sign off with exactly:
 ${answers?.signature ?? `Mohd Saif\n${identity.phone ?? ''}\n${identity.portfolio ?? ''}`}
 
-Open with exactly this line and nothing else before it: ${greet}`;
+Do NOT write a greeting line. Start at the first sentence: the greeting is added afterwards.`;
 
   const google = createGoogleGenerativeAI({ apiKey: key });
   let lastError = '';
@@ -413,9 +423,14 @@ Open with exactly this line and nothing else before it: ${greet}`;
     const started = Date.now();
     try {
       const result = await generateText({ model: google(model), system, prompt });
-      const body = result.text.trim().replace(/—/g, ',');
+      /* The model was handed the exact greeting and still rewrote it, lowercasing
+         the name. So it is stripped and prepended instead of asked for. */
+      let body = result.text.trim().replace(/—/g, ',');
+      body = body.replace(/^\s*(hi|hello|hey|dear)\b[^\n]*\n+/i, '');
+      body = `${greet}\n\n${body}`;
       /* Everything he can legitimately claim, in one blob to check against. */
       const corpus = [
+        resumeTex,
         JSON.stringify(answers ?? {}),
         Object.values(skills).flat().join(' '),
         employers.join(' '),
