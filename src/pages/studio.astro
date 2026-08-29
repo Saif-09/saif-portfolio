@@ -733,6 +733,91 @@ import StudioApp from '../components/studio/StudioApp';
         border-inline-start-color: #1b7f4c !important;
       }
 
+      /* Saving a one-off: named after the company it was written for. */
+      .studio-oneoff {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4);
+        border: 1px solid var(--accent);
+        border-radius: 16px;
+        background: var(--surface);
+      }
+
+      .studio-oneoff label {
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .studio .studio-oneoff input {
+        flex: 1 1 12rem;
+        min-width: 0;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        padding: var(--space-2) var(--space-3);
+      }
+
+      .studio-oneoff p {
+        flex: 1 1 100%;
+        margin: 0;
+      }
+
+      .studio-download {
+        margin: 0;
+        font-size: var(--text-small);
+        color: var(--muted);
+      }
+
+      .studio-download a {
+        color: var(--ink);
+      }
+
+      .studio-tailored summary {
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .studio-tailored ul {
+        margin: var(--space-2) 0 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        font-size: var(--text-small);
+      }
+
+      .studio-tailored li {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+      }
+
+      .studio-tailored li a {
+        flex: 1 1 auto;
+        color: var(--ink);
+      }
+
+      .studio .studio-tailored button {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: var(--muted);
+        font-size: var(--text-mono);
+        text-decoration: underline;
+      }
+
       /* ----------------------------------------------------------- source */
 
       .studio-source {

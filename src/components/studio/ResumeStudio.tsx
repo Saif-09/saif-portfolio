@@ -93,6 +93,14 @@ export default function ResumeStudio() {
   const [source, setSource] = useState<'published' | 'draft'>('published');
   const [autoCompile, setAutoCompile] = useState(false);
 
+  /* One-off resumes, kept apart from the canonical four. */
+  const [tailored, setTailored] = useState<
+    { slug: string; label: string; createdAt: string; url: string }[]
+  >([]);
+  const [oneOffLabel, setOneOffLabel] = useState('');
+  const [namingOneOff, setNamingOneOff] = useState(false);
+  const [savingOneOff, setSavingOneOff] = useState(false);
+
   const buildPoll = useRef<number | null>(null);
   const compilePoll = useRef<number | null>(null);
   const clock = useRef<number | null>(null);
@@ -488,6 +496,15 @@ export default function ResumeStudio() {
 
   async function save() {
     if (!dirty || saving) return;
+    /* Replacing the base rewrites all four variants for every future
+       application, so it is a decision, not a default. */
+    if (
+      !window.confirm(
+        'Replace the base resume?\n\nThis rewrites all four variants for every future application. If this wording is for one company, use "Save for one company" instead.',
+      )
+    ) {
+      return;
+    }
     setSaving(true);
     setSaveError('');
     setSaved('');
@@ -511,6 +528,55 @@ export default function ResumeStudio() {
       setSaveError((err as Error).message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  const loadTailored = useCallback(async () => {
+    try {
+      const data = await api('tailored');
+      setTailored(data.tailored ?? []);
+    } catch {
+      /* the list is informational; saving must not depend on reading it */
+    }
+  }, [api]);
+
+  useEffect(() => {
+    if (authed) loadTailored();
+  }, [authed, loadTailored]);
+
+  /**
+   * Save the current source as a one-off, leaving resume.tex untouched.
+   * This is the path for "tailored to this company", which must not become
+   * everyone's resume.
+   */
+  async function saveOneOff() {
+    const label = oneOffLabel.trim();
+    if (!label || savingOneOff) return;
+    setSavingOneOff(true);
+    setSaveError('');
+    setSaved('');
+    try {
+      const data = await api('tailored', {
+        method: 'POST',
+        body: JSON.stringify({ tex, label }),
+      });
+      setSaved(`Saved for ${label}. Link: ${data.url}`);
+      setNamingOneOff(false);
+      setOneOffLabel('');
+      await loadTailored();
+    } catch (err) {
+      setSaveError((err as Error).message);
+    } finally {
+      setSavingOneOff(false);
+    }
+  }
+
+  async function removeTailored(slug: string) {
+    try {
+      await api(`tailored?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' });
+      await loadTailored();
+    } catch (err) {
+      setSaveError((err as Error).message);
     }
   }
 
@@ -614,11 +680,21 @@ export default function ResumeStudio() {
           </button>
           <button
             type="button"
+            onClick={() => setNamingOneOff((v) => !v)}
+            disabled={!dirty}
+            className="studio-primary"
+            title="Compile this wording and keep it at its own URL, leaving the base four alone"
+          >
+            Save for one company
+          </button>
+          <button
+            type="button"
             onClick={save}
             disabled={!dirty || saving}
-            className="studio-primary"
+            className="studio-ghost"
+            title="Rewrite all four variants with this wording"
           >
-            {saving ? 'Saving…' : 'Save and publish'}
+            {saving ? 'Saving…' : 'Replace the base'}
           </button>
         </div>
       </header>
@@ -638,6 +714,35 @@ export default function ResumeStudio() {
             </>
           )}
         </p>
+      )}
+
+      {namingOneOff && (
+        <form
+          className="studio-oneoff"
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveOneOff();
+          }}
+        >
+          <label htmlFor="studio-oneoff-label">Who is this version for?</label>
+          <input
+            id="studio-oneoff-label"
+            value={oneOffLabel}
+            onChange={(e) => setOneOffLabel(e.target.value)}
+            placeholder="Scaling Theory"
+            autoFocus
+          />
+          <button type="submit" disabled={savingOneOff || !oneOffLabel.trim()}>
+            {savingOneOff ? 'Compiling…' : 'Save it'}
+          </button>
+          <button type="button" className="studio-ghost" onClick={() => setNamingOneOff(false)}>
+            Cancel
+          </button>
+          <p className="studio-muted">
+            Compiles this wording, keeps it at its own link, and leaves the base four exactly as
+            they are.
+          </p>
+        </form>
       )}
 
       <div className="studio-panetabs" role="tablist" aria-label="View">
@@ -726,6 +831,20 @@ export default function ResumeStudio() {
             ))}
           </div>
 
+          <p className="studio-download">
+            <a
+              href={
+                source === 'draft' && active && draftUrls[active.id]
+                  ? draftUrls[active.id]
+                  : `${active?.pdf ?? ''}?v=${nonce}`
+              }
+              download={`Mohd_Saif_Resume_${active?.label.replace(/\s+/g, '_') ?? 'draft'}.pdf`}
+            >
+              Download this PDF
+            </a>
+            {source === 'draft' && ' (the draft, not the published one)'}
+          </p>
+
           <p className="studio-muted studio-note">
             {source === 'draft'
               ? 'Draft: your editor contents, compiled but not published.'
@@ -738,6 +857,25 @@ export default function ResumeStudio() {
         </section>
 
         <section className={`studio-col studio-edit ${pane === 'source' ? 'is-shown' : ''}`}>
+          {tailored.length > 0 && (
+            <details className="studio-tailored">
+              <summary>Tailored versions ({tailored.length})</summary>
+              <ul role="list">
+                {tailored.map((row) => (
+                  <li key={row.slug}>
+                    <a href={row.url} target="_blank" rel="noopener">
+                      {row.label}
+                    </a>
+                    <span className="studio-muted">{row.createdAt.slice(0, 10)}</span>
+                    <button type="button" onClick={() => removeTailored(row.slug)}>
+                      remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+
           <form className="studio-ai" onSubmit={runAi}>
             <label htmlFor="studio-instruction">
               Change the {active?.label ?? ''} resume in plain English
