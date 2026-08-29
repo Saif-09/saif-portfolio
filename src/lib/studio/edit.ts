@@ -73,6 +73,7 @@ Treat it as "tailor this variant to this role", and do it by REARRANGING AND REW
 NEVER, under any circumstances:
 - Add a technology, tool, employer or metric that is not already somewhere in the file. If the post wants Expo and the file does not say Expo, it does not go in.
 - Change any year, duration or date. If they ask for 8+ years and the file says 3.5+, it stays 3.5+ and you say so in the note.
+- Change \\roleTitle or any job title to match the seniority in the post. A title he held is a fact about his employment, not a positioning choice, and promoting a past SDE-I to "Senior" because the posting says Senior is misrepresentation. Asked to do it directly, refuse and say why.
 - Invent scale ("millions of users"), team size, or an outcome.
 A resume that wins an interview on a claim he cannot back is worse than one that never got the interview.
 
