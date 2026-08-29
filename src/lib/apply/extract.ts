@@ -385,11 +385,15 @@ One opening line, written in the FIRST PERSON, saying what he builds and why it 
 Good: "I build React Native apps end to end, both stores plus the Node backends behind them."
 Good: "I have spent three years shipping mobile products where the hard part was the release, not the UI."
 Bad: "Mohd Saif, a product engineer in Delhi with 3.5 years of experience." That is a name badge, not a sentence.
-Do not state the number of years here if you are also going to state it at the end. Say it once, in whichever place matters more.
+Do NOT put the number of years in this opening line. If there is a shortfall, the number belongs in the line about it, where it is doing work. Say what he builds here, not how long for.
 
 Then two or three bullets, each starting with "- ".
 
-Then, only if he clearly misses something they explicitly required, one flat line saying so. If the opening line already gave the number, do NOT repeat it here: write "That is short of the eight years you asked for." rather than restating how long he has worked. Saying it twice in a six-line email draws a circle around it.
+Then, only if he clearly misses something they explicitly required, ONE line saying so, and it must stand entirely on its own. Both numbers, in plain words, readable by someone who has not read the rest of the email and is not an engineer.
+Good: "I have three and a half years of experience, not the eight you asked for."
+Good: "On experience: I am at three and a half years, not eight."
+Bad: "That is short of the eight years you asked for." Short of WHAT? It points at a number it never says, and a recruiter skimming has to reconstruct it.
+Never start this line with "That is", "This is" or "While". Never make the reader look elsewhere to understand it.
 
 Then nothing. The links and signature are added afterwards; do not write them.
 
