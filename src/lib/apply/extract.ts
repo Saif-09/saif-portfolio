@@ -245,6 +245,14 @@ export const VARIANT_URL: Record<Variant, string> = {
   fullstack: 'https://saifsiddiqui.in/resume/fullstack',
 };
 
+/* Keep in sync with pdf_name() in resume/build.sh. */
+export const VARIANT_PDF: Record<Variant, string> = {
+  product: '/Mohd_Saif_Resume.pdf',
+  mobile: '/Mohd_Saif_Resume_Mobile.pdf',
+  ai: '/Mohd_Saif_Resume_AI.pdf',
+  fullstack: '/Mohd_Saif_Resume_Fullstack.pdf',
+};
+
 /**
  * Deterministic, and it explains itself. AI leans strongest because an AI role
  * that also says React Native still wants the AI resume; mobile beats generic
@@ -273,8 +281,12 @@ export interface Draft {
   to: string;
   variant: Variant;
   variantWhy: string;
-  /** The PDF for the variant it picked, so the email can attach it. */
+  /** The memorable link that goes in the email body. */
   resumeUrl: string;
+  /** The PDF itself, for the download button. Not the redirect: `download`
+   *  across a redirect is unreliable on iOS Safari, which is where this is
+   *  used most. */
+  resumePdf: string;
   model: string;
   ms: number;
   /** Requirements the draft claims that his own material never mentions. */
@@ -515,6 +527,7 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
         .toLowerCase();
       return {
         resumeUrl: VARIANT_URL[variant],
+        resumePdf: VARIANT_PDF[variant],
         suspect: suspectClaims(body, extraction, corpus),
         /* Their format wins when they specify one: a filter is probably
            looking for it. */

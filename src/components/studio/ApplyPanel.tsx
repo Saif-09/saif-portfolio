@@ -37,6 +37,7 @@ interface Draft {
   variant: string;
   variantWhy: string;
   resumeUrl?: string;
+  resumePdf?: string;
   suspect?: string[];
 }
 
@@ -496,11 +497,11 @@ export default function ApplyPanel() {
                     <a className="apply-primary" href={mailto()}>
                       Open in Mail
                     </a>
-                    {draft.resumeUrl && (
+                    {(draft.resumePdf || draft.resumeUrl) && (
                       <a
                         className="apply-download"
-                        href={draft.resumeUrl}
-                        download={`Mohd_Saif_Resume.pdf`}
+                        href={draft.resumePdf ?? draft.resumeUrl}
+                        download="Mohd_Saif_Resume.pdf"
                       >
                         Download the {draft.variant} resume
                       </a>
