@@ -10,6 +10,10 @@
  */
 import type { Pool } from 'pg';
 import { getPool } from '../analytics/db';
+import {
+  redisAvailable, redisList, redisLog, redisUpdate, redisDelete,
+  redisReadAnswers, redisWriteAnswers,
+} from './redis-store';
 
 export interface Application {
   id: number;
@@ -26,14 +30,51 @@ export interface Application {
 }
 
 export class NoDatabase extends Error {
-  constructor() {
-    super('No POSTGRES_URL is configured, so applications cannot be stored.');
+  constructor(detail?: string) {
+    super(
+      detail
+        ? `No storage available: ${detail}`
+        : 'Neither POSTGRES_URL nor REDIS_URL is configured, so nothing can be stored.',
+    );
   }
+}
+
+/**
+ * Postgres first, Redis second.
+ *
+ * Postgres is the right home for this, but "the database was unreachable" must
+ * not mean "the application you just drafted is gone". The check runs once per
+ * instance and is cached, so a dead Postgres costs one failed connection per
+ * cold start rather than one per request.
+ */
+type Backend = 'pg' | 'redis' | 'none';
+let backendChoice: Promise<Backend> | undefined;
+
+async function backend(): Promise<Backend> {
+  backendChoice ??= (async () => {
+    try {
+      const db = await getPool();
+      if (db) {
+        await db.query('SELECT 1');
+        return 'pg' as const;
+      }
+    } catch (err) {
+      console.warn('apply: Postgres unavailable, falling back to Redis:', (err as Error).message);
+    }
+    return (await redisAvailable()) ? ('redis' as const) : ('none' as const);
+  })();
+  return backendChoice;
+}
+
+/** Which store answered, so the UI can say so rather than looking broken. */
+export async function activeBackend(): Promise<Backend> {
+  return backend();
 }
 
 let schemaReady: Promise<void> | undefined;
 
 async function ready(): Promise<Pool> {
+  if ((await backend()) === 'none') throw new NoDatabase();
   const db = await getPool();
   if (!db) throw new NoDatabase();
 
@@ -77,12 +118,14 @@ async function ready(): Promise<Pool> {
 
 /** The canonical answers blob, mirrored from ~/job-search/answers.yml. */
 export async function readAnswers(): Promise<Record<string, unknown> | null> {
+  if ((await backend()) === 'redis') return redisReadAnswers();
   const db = await ready();
   const { rows } = await db.query('SELECT data FROM job_answers WHERE id = 1');
   return rows[0]?.data ?? null;
 }
 
 export async function writeAnswers(data: Record<string, unknown>): Promise<void> {
+  if ((await backend()) === 'redis') return redisWriteAnswers(data);
   const db = await ready();
   await db.query(
     `INSERT INTO job_answers (id, data, updated_at) VALUES (1, $1, now())
@@ -114,6 +157,7 @@ const toApplication = (row: Record<string, any>): Application => ({
 });
 
 export async function listApplications(limit = 200): Promise<Application[]> {
+  if ((await backend()) === 'redis') return (await redisList()).slice(0, limit);
   const db = await ready();
   const { rows } = await db.query(
     `SELECT id, applied_on, company, role, source, how_to_apply, contact,
@@ -146,6 +190,7 @@ export interface NewApplication {
 export async function logApplication(
   input: NewApplication,
 ): Promise<{ application: Application; duplicate: boolean }> {
+  if ((await backend()) === 'redis') return redisLog(input);
   const db = await ready();
 
   const existing = await db.query(
@@ -188,6 +233,7 @@ export async function updateStatus(
   id: number,
   status: string,
 ): Promise<Application | null> {
+  if ((await backend()) === 'redis') return redisUpdate(id, status);
   const db = await ready();
   const { rows } = await db.query(
     `UPDATE job_applications
@@ -207,6 +253,7 @@ export async function updateStatus(
 /** Remove a row. Mis-read screenshots happen, and a log you cannot correct
  *  stops being trusted, which is the same as not having one. */
 export async function deleteApplication(id: number): Promise<boolean> {
+  if ((await backend()) === 'redis') return redisDelete(id);
   const db = await ready();
   const { rowCount } = await db.query('DELETE FROM job_applications WHERE id = $1', [id]);
   return (rowCount ?? 0) > 0;
