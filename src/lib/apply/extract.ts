@@ -337,6 +337,14 @@ const COMMON = new Set([
   'design', 'designing', 'take', 'takes', 'using', 'use', 'uses', 'strong', 'solid',
 ]);
 
+/** One proof link, chosen by role rather than by the model's mood. */
+function pickProof(variant: Variant): string {
+  if (variant === 'ai') return 'https://saifsiddiqui.in/work/shoppin';
+  if (variant === 'mobile') return 'https://saifsiddiqui.in/work/ueue';
+  if (variant === 'fullstack') return 'https://www.npmjs.com/package/codevouch';
+  return 'https://saifsiddiqui.in/work/shoppin';
+}
+
 export async function draftEmail(
   extraction: Extraction,
   answers: Record<string, any> | null,
@@ -348,48 +356,58 @@ export async function draftEmail(
   const resumeUrl = VARIANT_URL[variant];
   const greet = greeting(extraction);
 
+  /* The bank the drafter selects from, tags included so it can match the post.
+     Selection cannot invent; composition can. */
+  const achievements = Array.isArray(answers?.achievements) ? answers.achievements : [];
+  const achievementList = achievements
+    .map((item: any, index: number) => {
+      const text = String(item?.text ?? '').replace(/\s+/g, ' ').trim();
+      const tags = Array.isArray(item?.tags) ? item.tags.join(', ') : '';
+      return text ? `${index + 1}. [${tags}] ${text}` : '';
+    })
+    .filter(Boolean)
+    .join('\n');
+
   const paragraphs = (answers?.paragraphs ?? {}) as Record<string, string>;
   const identity = (answers?.identity ?? {}) as Record<string, string>;
 
-  const system = `You draft short cold application emails for Mohd Saif, a product engineer in Delhi. Everything factual must come from the material below. Never invent an employer, a metric, a date or a technology he has not used.
+  const system = `You draft short cold application emails for Mohd Saif, a product engineer in Delhi.
 
-SHAPE
-Three short paragraphs, five to seven sentences total.
-1. The single most relevant thing he has built, stated as a fact, with a specific in it. No greeting beyond "Hi <name>," and no throat-clearing.
-2. One or two sentences of evidence against what they actually asked for, in their words.
-3. The links, then stop.
+SHAPE. Not prose. This exactly:
+
+One opening line: what he does and the single most relevant thing about it for THIS role. One sentence, no greeting, no preamble.
+
+Then two or three bullets, each starting with "- ".
+
+Then, only if he clearly misses something they explicitly required, one flat line saying so.
+
+Then nothing. The links and signature are added afterwards; do not write them.
+
+THE BULLETS ARE THE EMAIL
+- PICK them from the ACHIEVEMENTS list below. Do not write new ones. Selecting from things he has actually done is the whole point: it is what makes the email true.
+- Pick by fit with what this post asks for, strongest match first. If the post is vague, pick the strongest ones generally: the ones with a number or a hard problem in them.
+- Two or three. Never four. Never one.
+- Keep each close to the given wording. Trimming and light rewording to fit their vocabulary is fine; adding a claim is not.
+- Lead with the work or the outcome, not with "I". "Migrated Wellbeing Nutrition off Appmaker..." not "I migrated...". A couple may start with I; all of them starting with I reads as a list of boasts.
+- Each bullet is one line, at most about 25 words. Cut the clause that carries no information.
 
 WRITE LIKE A PERSON, NOT LIKE A MODEL
-These are the tells that make an email read as generated. Avoid every one:
-- Never an em dash. Use a comma, a colon or a full stop.
+- Never an em dash. Comma, colon or full stop.
 - Never open with "I am writing to", "I would like to express my interest", "I hope this email finds you well", or the job title read back formally.
-- Banned words: passionate, excited, thrilled, delighted, eager, leverage, utilise, spearhead, orchestrate, delve, robust, seamless, seamlessly, cutting-edge, fast-paced, dynamic, synergy, holistic.
-- Banned phrases: "great fit", "perfect fit", "strong fit", "resonated with me", "aligns with", "proven track record", "wealth of experience", "hit the ground running", "in today's".
+- Banned words: passionate, excited, thrilled, delighted, eager, leverage, utilise, spearhead, orchestrate, delve, robust, seamless, cutting-edge, fast-paced, dynamic, synergy, holistic.
+- Banned phrases: "great fit", "perfect fit", "resonated with me", "aligns with", "proven track record", "wealth of experience", "hit the ground running", "I bring", "I offer".
 - No "Furthermore", "Moreover", "Additionally", "In conclusion".
-- No closing summary sentence. Do not end with "With my background in X and my passion for Y, I am confident...". End on the links or a short plain line.
-- No rule-of-three lists in prose ("scoping, building and measuring"). Two things, or four, or one.
-- No "not just X, but Y".
-- Do not stack adverbs. One "efficiently" is one too many.
-
-- Vary sentence length, and this is not optional: at least ONE sentence must be under ten words. Three thirty-word sentences in a row is the single clearest sign a machine wrote it. A short line like "I ship, then I measure." or "That one took four months." earns its place.
-- Do not write "I bring", "I offer", "I would bring". Say what he did, in the past tense.
-- Where he falls short of a requirement, state it flat and move on. Do not pivot off it with "While you asked for X, I...". That construction is a tell and it draws attention to the gap.
+- No closing summary. Do not restate the email at the end.
 - Contractions are good: I've, I'm, it's, doesn't.
-- Include at least two checkable specifics: a product name, a real number from the material, a named technology he actually used. Vague competence is what a model writes; a specific is what a person writes.
-- Do not open the same way every time. If the post gives you something concrete to react to, react to it.
 
 MATCHING THE POST
 - Use their vocabulary ONLY for things he has actually done. Rewording his real work in their words is the job. Claiming their requirement because they listed it is not.
-- If they name a tool that does not appear in the material above, do not mention that tool at all. Not to claim it, not to dodge it. It simply does not appear. Listing "Expo and EAS" when the material says only Expo is the exact error to avoid.
-- Never write "at scale", "in production at scale" or similar unless those words are in the material.
-- Answer their listed requirements in roughly their order of emphasis.
-- If they ask for something he does not have, either leave it alone or name it once, plainly, in half a sentence. Never apologise for it, never pad around it, never explain it away.
+- If they name a tool that is nowhere in the material below, it does not appear in the email at all. Not claimed, not dodged.
+- Never write "at scale" or similar unless those words are in the material.
+- Where he falls short of something they required, state it flat in one line and stop. Do not pivot with "While you asked for X, I...", do not apologise, do not explain it away.
+- Never overstate: 3.5+ years, never more, and never change a date.
 
-RULES
-- At most one proof link besides the resume, on its own line, and only if it fits the role. A live product beats a repo.
-- Never overstate: 3.5+ years, never more.
-- Plain text. No markdown. End with the signature exactly as given.
-- Output the body only, with no subject line and no preamble.`;
+Output the opening line and the bullets only.`;
 
   const prompt = `THE POST:
 company: ${extraction.company || '(not visible)'}
@@ -402,18 +420,8 @@ posted by: ${extraction.postedBy || '(unknown)'}
 ABOUT MOHD SAIF:
 ${paragraphs.positioning ?? ''}
 
-Relevant experience to draw on, pick only what fits:
-- product angle: ${paragraphs.why_me_product ?? ''}
-- mobile angle: ${paragraphs.why_me_mobile ?? ''}
-- AI angle: ${paragraphs.why_me_ai ?? ''}
-- biggest project: ${paragraphs.biggest_project ?? ''}
-- side projects: ${paragraphs.side_projects ?? ''}
-
-The resume link to include, exactly: ${resumeUrl}
-Possible proof links: https://saifsiddiqui.in/work/ueue (solo product on both stores), https://saifsiddiqui.in/work/shoppin (AI shopping platform), https://www.npmjs.com/package/codevouch (CLI on npm)
-
-Sign off with exactly:
-${answers?.signature ?? `Mohd Saif\n${identity.phone ?? ''}\n${identity.portfolio ?? ''}`}
+ACHIEVEMENTS, pick two or three of these and nothing else:
+${achievementList || '(none configured; in that case draw only on the positioning above and keep it to one short paragraph)'}
 
 Do NOT write a greeting line. Start at the first sentence: the greeting is added afterwards.`;
 
@@ -425,9 +433,27 @@ Do NOT write a greeting line. Start at the first sentence: the greeting is added
       const result = await generateText({ model: google(model), system, prompt });
       /* The model was handed the exact greeting and still rewrote it, lowercasing
          the name. So it is stripped and prepended instead of asked for. */
-      let body = result.text.trim().replace(/—/g, ',');
-      body = body.replace(/^\s*(hi|hello|hey|dear)\b[^\n]*\n+/i, '');
-      body = `${greet}\n\n${body}`;
+      /* The model was handed the exact greeting and still rewrote it, lowercasing
+         the name. So it is stripped and prepended instead of asked for. The links
+         and signature are appended for the same reason: they are fixed strings
+         and there is nothing for a model to add by regenerating them. */
+      let core = result.text.trim().replace(/—/g, ',');
+      core = core.replace(/^\s*(hi|hello|hey|dear)\b[^\n]*\n+/i, '');
+      core = core.replace(/\n+(mohd saif|regards|best|thanks)[\s\S]*$/i, '').trim();
+
+      const proof = pickProof(variant);
+      const body = [
+        greet,
+        '',
+        core,
+        '',
+        proof,
+        resumeUrl,
+        '',
+        String(answers?.signature ?? `Mohd Saif\n${identity.phone ?? ''}\n${identity.portfolio ?? ''}`).trim(),
+      ]
+        .filter((line) => line !== undefined)
+        .join('\n');
       /* Everything he can legitimately claim, in one blob to check against. */
       const corpus = [
         resumeTex,
