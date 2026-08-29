@@ -664,14 +664,69 @@ import StudioApp from '../components/studio/StudioApp';
       }
 
       /* Height-capped rather than letter-shaped: the thumbnail rail has to
-         stay visible under it without scrolling, and the viewer fits the page
-         to width anyway (view=FitH). */
-      .studio-pdf {
-        width: 100%;
-        height: 58vh;
-        min-height: 20rem;
+         stay visible under it without scrolling. */
+      .studio-pdfjs {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+      }
+
+      .studio-pdfscroll {
+        inline-size: 100%;
+        block-size: 58vh;
+        min-block-size: 20rem;
+        overflow: auto;
         border: 1px solid var(--line);
         background: var(--surface);
+      }
+
+      /* The canvas is dropped in by pdf.js, so this box has to size itself
+         from the canvas rather than the other way round. */
+      .studio-pdfpage {
+        position: relative;
+        inline-size: fit-content;
+        margin-inline: auto;
+        cursor: text;
+      }
+
+      .studio-pdfpage canvas {
+        display: block;
+      }
+
+      .studio-pdfmark {
+        position: absolute;
+        pointer-events: none;
+        /* Not a theme token: this sits on the white of the page, not on the
+           studio's background, and --accent is near-black in light mode. */
+        background: rgb(255 196 0 / 34%);
+        outline: 1px solid rgb(193 132 0 / 70%);
+        border-radius: 2px;
+      }
+
+      .studio-zoom {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+      }
+
+      .studio .studio-zoom button {
+        min-inline-size: 2rem;
+        padding: 0.15rem 0.5rem;
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--line);
+        line-height: 1.2;
+      }
+
+      .studio .studio-zoom button:disabled {
+        opacity: 0.4;
+      }
+
+      .studio-hint {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: var(--text-mono);
+        color: var(--muted);
       }
 
       .studio-note {
@@ -855,111 +910,6 @@ import StudioApp from '../components/studio/StudioApp';
         color: var(--muted);
         font-size: var(--text-mono);
         text-decoration: underline;
-      }
-
-      /* ------------------------------------------------------------- form */
-      /* The point of this pane: edit the words without hunting for the line
-         in 17,000 characters of TeX. */
-
-      .studio-editorswitch {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-      }
-
-      .studio-editorswitch button {
-        background: transparent;
-        color: var(--muted);
-        border-color: var(--line);
-      }
-
-      .studio-editorswitch button.is-active {
-        background: var(--ink);
-        color: var(--bg);
-        border-color: var(--ink);
-      }
-
-      .studio-form {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-        max-block-size: 68vh;
-        overflow-y: auto;
-        padding-inline-end: var(--space-2);
-      }
-
-      .studio-fieldset {
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: var(--surface);
-      }
-
-      .studio .studio-grouphead {
-        inline-size: 100%;
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: var(--space-3);
-        padding: var(--space-2) var(--space-3);
-        background: transparent;
-        border: 0;
-        color: var(--ink);
-        text-align: start;
-        cursor: pointer;
-      }
-
-      .studio-field {
-        padding: var(--space-2) var(--space-3) var(--space-3);
-        border-block-start: 1px solid var(--line);
-      }
-
-      .studio-field label {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: var(--space-2);
-        margin-block-end: var(--space-1);
-        font-family: var(--font-mono);
-        font-size: var(--text-mono);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-      }
-
-      .studio .studio-reveal {
-        background: transparent;
-        border: 0;
-        padding: 0;
-        color: var(--muted);
-        font-size: var(--text-mono);
-        text-decoration: underline;
-        text-transform: none;
-        letter-spacing: 0;
-        cursor: pointer;
-        flex: none;
-      }
-
-      .studio .studio-reveal:hover {
-        color: var(--ink);
-      }
-
-      .studio .studio-field input,
-      .studio .studio-field textarea {
-        inline-size: 100%;
-        font-family: var(--font-text);
-        font-size: 0.95rem;
-        line-height: 1.5;
-        color: var(--ink);
-        background: var(--bg);
-        border: 1px solid var(--line);
-        padding: var(--space-2) var(--space-3);
-        resize: vertical;
-      }
-
-      .studio-fieldwarn {
-        margin: var(--space-1) 0 0;
-        font-size: var(--text-small);
-        color: #b3261e;
       }
 
       /* ----------------------------------------------------------- source */

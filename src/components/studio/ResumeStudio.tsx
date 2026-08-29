@@ -14,7 +14,8 @@
  * minute behind a running clock.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { parseResume, applyFieldEdits, type Field } from '../../lib/studio/parse';
+import PdfPreview, { type Pick } from './PdfPreview';
+import { flattenTex, locateInTex, variantBlockRange } from '../../lib/studio/locate';
 
 interface Variant {
   id: string;
@@ -64,14 +65,8 @@ export default function ResumeStudio() {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [tab, setTab] = useState<string>('');
   const [pane, setPane] = useState<'preview' | 'source'>('preview');
-  /* Form or raw LaTeX. The form is the default because finding the right line
-     in 17,000 characters of TeX is the thing that makes editing this painful. */
-  const [editor, setEditor] = useState<'form' | 'source'>('form');
-  /* Held locally while typing, committed on blur. Re-parsing every keystroke
-     would move the field's own range out from under it, and a half-typed brace
-     would make it vanish mid-edit. */
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  /* Where a click in the preview landed, and whether it was a sure thing. */
+  const [found, setFound] = useState('');
   const sourceRef = useRef<HTMLTextAreaElement>(null);
 
   const [tex, setTex] = useState('');
@@ -118,36 +113,6 @@ export default function ResumeStudio() {
   const blobs = useRef<string[]>([]);
 
   const dirty = tex !== baseTex && baseTex !== '';
-
-  const parsed = useMemo(() => (tex ? parseResume(tex) : { fields: [], groups: [] }), [tex]);
-
-  /** Commit one field back into the source, replacing only its own span. */
-  function commitField(field: Field, value: string) {
-    setDrafts((current) => {
-      const next = { ...current };
-      delete next[field.id];
-      return next;
-    });
-    if (value === field.value) return;
-    setTex((current) => applyFieldEdits(current, [{ ...field, value }]));
-  }
-
-  /** Show a field's place in the raw LaTeX, which is the Overleaf trick. */
-  function revealInSource(field: Field) {
-    setEditor('source');
-    setPane('source');
-    window.setTimeout(() => {
-      const area = sourceRef.current;
-      if (!area) return;
-      area.focus();
-      area.setSelectionRange(field.start, field.end);
-      /* Scroll the selection into view: textareas do not do it themselves.
-         Measured from the line count, which is close enough to land on it. */
-      const before = tex.slice(0, field.start).split('\n').length;
-      const lineHeight = area.scrollHeight / Math.max(1, tex.split('\n').length);
-      area.scrollTop = Math.max(0, (before - 6) * lineHeight);
-    }, 60);
-  }
   const draftIsCurrent = draftOf !== null && draftOf === tex;
 
   const api = useCallback(
@@ -634,6 +599,59 @@ export default function ResumeStudio() {
     }
   }
 
+  /* ------------------------------------------------------ click to locate */
+
+  /* Rebuilt whenever the source changes, which is the point: this works on a
+     draft the compiler has not seen, not only on what was last compiled. */
+  const flat = useMemo(() => flattenTex(tex), [tex]);
+
+  /**
+   * A word was clicked in the preview. Put the cursor on it in the LaTeX.
+   *
+   * Nothing moves if the phrase cannot be found. A cursor that jumps to the
+   * wrong line is worse than one that stays put, because the next keystroke
+   * lands there.
+   */
+  const handlePick = useCallback(
+    (pick: Pick) => {
+      const hit = locateInTex(flat, pick.text, {
+        before: pick.before,
+        after: pick.after,
+        /* Four variants say similar things. Break the tie towards the one
+           actually on screen. */
+        prefer: tab ? variantBlockRange(tex, tab) : undefined,
+      });
+
+      if (!hit) {
+        setFound(`Could not find "${pick.text.trim().slice(0, 40)}" in the source.`);
+        return;
+      }
+
+      setPane('source');
+      const line = tex.slice(0, hit.start).split('\n').length;
+      const notes: string[] = [`Line ${line}.`];
+      /* Both of these mean "the selection may not be all of what you clicked",
+         and staying quiet about that is how you edit the wrong thing. */
+      if (hit.partial) notes.push('The rest of that line is built by a macro.');
+      if (hit.matches > 1) notes.push(`It appears ${hit.matches} times; this is the first.`);
+      setFound(notes.join(' '));
+
+      /* The pane may only just have been switched, so let it lay out first. */
+      requestAnimationFrame(() => {
+        const box = sourceRef.current;
+        if (!box) return;
+        box.focus({ preventScroll: true });
+        box.setSelectionRange(hit.start, hit.end);
+        /* A textarea will not scroll to a selection on its own. Estimate the
+           row from the line count and put it a third of the way down. */
+        const rows = tex.slice(0, hit.start).split('\n').length - 1;
+        const rowHeight = box.scrollHeight / Math.max(1, tex.split('\n').length);
+        box.scrollTop = Math.max(0, rows * rowHeight - box.clientHeight / 3);
+      });
+    },
+    [flat, tex, tab],
+  );
+
   /* --------------------------------------------------------------- render */
 
   const active = useMemo(
@@ -649,13 +667,15 @@ export default function ResumeStudio() {
   }, [run]);
 
   /** Which PDF a given variant should show, honouring the source switch. */
-  const srcFor = useCallback(
+  const pdfFor = useCallback(
     (v: Variant) =>
-      source === 'draft' && draftUrls[v.id]
-        ? `${draftUrls[v.id]}${PDF_VIEW}`
-        : `${v.pdf}?v=${nonce}${PDF_VIEW}`,
+      source === 'draft' && draftUrls[v.id] ? draftUrls[v.id] : `${v.pdf}?v=${nonce}`,
     [source, draftUrls, nonce],
   );
+
+  /* The thumbnails are still iframes, so they still want the viewer chrome
+     hidden. pdf.js has no chrome to hide. */
+  const srcFor = useCallback((v: Variant) => `${pdfFor(v)}${PDF_VIEW}`, [pdfFor]);
 
   if (booting) return <p className="studio-muted">Opening the studio…</p>;
 
@@ -847,10 +867,15 @@ export default function ResumeStudio() {
                   open {active.path}
                 </a>
               </p>
-              <iframe
-                className="studio-pdf"
-                src={srcFor(active)}
-                title={`${active.label} resume, ${source}`}
+              <PdfPreview
+                url={pdfFor(active)}
+                title={`${active.label} resume`}
+                onPick={handlePick}
+                footnote={
+                  <p className="studio-hint">
+                    {found || 'Click any word to put the cursor on it in the LaTeX.'}
+                  </p>
+                }
               />
             </>
           )}
@@ -992,108 +1017,9 @@ export default function ResumeStudio() {
             </div>
           )}
 
-          <div className="studio-editorswitch" role="group" aria-label="Editor">
-            <button
-              type="button"
-              className={editor === 'form' ? 'is-active' : ''}
-              onClick={() => setEditor('form')}
-            >
-              Form
-            </button>
-            <button
-              type="button"
-              className={editor === 'source' ? 'is-active' : ''}
-              onClick={() => setEditor('source')}
-            >
-              LaTeX
-            </button>
-            <span className="studio-muted">
-              {editor === 'form'
-                ? `${parsed.fields.length} fields`
-                : `${tex.length.toLocaleString()} characters`}
-            </span>
-          </div>
-
-          {editor === 'form' && (
-            <div className="studio-form">
-              {parsed.groups.map((group) => {
-                const groupFields = parsed.fields.filter((f) => f.group === group);
-                const open = openGroups[group] ?? group.startsWith('Base');
-                return (
-                  <section key={group} className="studio-fieldset">
-                    <button
-                      type="button"
-                      className="studio-grouphead"
-                      aria-expanded={open}
-                      onClick={() =>
-                        setOpenGroups((current) => ({ ...current, [group]: !open }))
-                      }
-                    >
-                      <span>{group}</span>
-                      <span className="studio-muted">{groupFields.length}</span>
-                    </button>
-
-                    {open &&
-                      groupFields.map((field) => {
-                        const value = drafts[field.id] ?? field.value;
-                        /* A half-typed brace would make the field vanish on the
-                           next parse, so warn instead of letting it save. */
-                        const braces =
-                          (value.match(/(?<!\\)\{/g) ?? []).length -
-                          (value.match(/(?<!\\)\}/g) ?? []).length;
-                        return (
-                          <div key={field.id} className="studio-field">
-                            <label htmlFor={`f-${field.id}`}>
-                              {field.label}
-                              <button
-                                type="button"
-                                className="studio-reveal"
-                                onClick={() => revealInSource(field)}
-                                title="Show this in the LaTeX"
-                              >
-                                in LaTeX
-                              </button>
-                            </label>
-                            {field.multiline ? (
-                              <textarea
-                                id={`f-${field.id}`}
-                                value={value}
-                                rows={Math.min(6, Math.ceil(value.length / 70) + 1)}
-                                onChange={(e) =>
-                                  setDrafts((c) => ({ ...c, [field.id]: e.target.value }))
-                                }
-                                onBlur={(e) => commitField(field, e.target.value)}
-                              />
-                            ) : (
-                              <input
-                                id={`f-${field.id}`}
-                                value={value}
-                                onChange={(e) =>
-                                  setDrafts((c) => ({ ...c, [field.id]: e.target.value }))
-                                }
-                                onBlur={(e) => commitField(field, e.target.value)}
-                              />
-                            )}
-                            {braces !== 0 && (
-                              <p className="studio-fieldwarn">
-                                Braces are unbalanced by {braces}. Fix before leaving this field.
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                  </section>
-                );
-              })}
-            </div>
-          )}
-
-          <label
-            htmlFor="studio-source"
-            className="studio-source-label"
-            hidden={editor === 'form'}
-          >
+          <label htmlFor="studio-source" className="studio-source-label">
             resume.tex
+            <span className="studio-muted"> · {tex.length.toLocaleString()} characters</span>
           </label>
           <textarea
             id="studio-source"
@@ -1103,7 +1029,6 @@ export default function ResumeStudio() {
             onChange={(e) => setTex(e.target.value)}
             spellCheck={false}
             wrap="off"
-            hidden={editor === 'form'}
           />
         </section>
       </div>
