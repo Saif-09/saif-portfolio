@@ -123,9 +123,13 @@ export default function ApplyPanel() {
     setPreview(objectUrl.current);
 
     try {
-      const form = new FormData();
-      form.append('image', file);
-      const data = await api('extract', { method: 'POST', body: form });
+      /* Raw bytes, not FormData: Astro refuses form content types on
+         on-demand routes as CSRF, even same-origin. */
+      const data = await api('extract', {
+        method: 'POST',
+        headers: { 'content-type': file.type || 'image/png' },
+        body: file,
+      });
 
       setExtraction(data.extraction);
       if (data.refused) {

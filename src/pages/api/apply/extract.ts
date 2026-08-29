@@ -17,21 +17,21 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (blocked) return blocked;
   if (!applyAvailable()) return json({ error: 'No model key configured.' }, 503);
 
-  let form: FormData;
-  try {
-    form = await request.formData();
-  } catch {
-    return json({ error: 'Send the screenshot as multipart form data.' }, 400);
+  /* The image arrives as raw bytes, not multipart. Astro's CSRF guard rejects
+     every form content type on an on-demand route, including from the site's
+     own origin, and an image body is not a form submission. It is also smaller
+     than the base64 the alternative would need. */
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.startsWith('image/')) {
+    return json({ error: 'Send the screenshot as a raw image body.' }, 415);
   }
-
-  const file = form.get('image');
-  const hint = typeof form.get('hint') === 'string' ? (form.get('hint') as string) : '';
-  if (!(file instanceof File)) return json({ error: 'No screenshot attached.' }, 400);
-  if (file.size > MAX_BYTES) return json({ error: 'That image is too large.' }, 413);
-  if (!file.type.startsWith('image/')) return json({ error: 'That is not an image.' }, 415);
+  const hint = request.headers.get('x-apply-hint') ?? '';
 
   try {
-    const image = Buffer.from(await file.arrayBuffer());
+    const bytes = await request.arrayBuffer();
+    if (bytes.byteLength === 0) return json({ error: 'No screenshot attached.' }, 400);
+    if (bytes.byteLength > MAX_BYTES) return json({ error: 'That image is too large.' }, 413);
+    const image = Buffer.from(bytes);
     const { extraction, model, ms } = await extractPost(image, hint || undefined);
 
     /* Say so and stop. Drafting a polite reply to a scam wastes his time. */
