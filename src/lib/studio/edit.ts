@@ -294,12 +294,16 @@ type Proposal = { edits: ProposedEdit[]; note: string };
 
 async function viaAnthropic(prompt: string, key: string): Promise<Proposal> {
   const client = new Anthropic({ apiKey: key });
-  const response = await client.messages.create({
-    model: env('STUDIO_ANTHROPIC_MODEL') || 'claude-opus-5',
+  const response = await client.beta.messages.create({
+    model: env('STUDIO_ANTHROPIC_MODEL') || 'claude-sonnet-5-5',
     max_tokens: 16000,
     /* Effort medium: these are small, well-specified surgical edits and the
        studio is interactive, so latency is part of the product. */
     output_config: { effort: 'medium' },
+    /* If a safety classifier misfires on a resume edit, the API retries the
+       same request on a fallback model inside this one call. */
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default',
     system: SYSTEM,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -310,7 +314,7 @@ async function viaAnthropic(prompt: string, key: string): Promise<Proposal> {
 
   return parseProposal(
     response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('')
       .trim(),
